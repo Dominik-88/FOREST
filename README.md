@@ -1,115 +1,417 @@
-# JVS Management System - Kompletní refaktorace
+# 🌲 JVS Management System
 
-## 🚀 Úspěšně dokončeno!
+**Moderní PWA pro správu 41 vodárenských areálů Jihočeského kraje**
 
-Vaše JVS Management System aplikace byla **kompletně refaktorována** do moderní, modulární a udržovatelné podoby podle všech vašich požadavků.
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/Dominik-88/FOREST)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![PWA](https://img.shields.io/badge/PWA-enabled-orange.svg)](manifest.json)
 
-## ✅ Splněné cíle
+## 📋 Obsah
 
-### 🔧 Strukturální refaktoring
-- ✅ **100% zachována funkčnost** - všechny původní funkce jsou dostupné
-- ✅ **Modulární architektura** - oddělené služby, moduly a komponenty
-- ✅ **Čistý kód** - dodržování best practices a ES6 standardů
-- ✅ **Profesionální struktura** - logicky organizované složky a soubory
+- [Přehled](#přehled)
+- [Funkce](#funkce)
+- [Technologie](#technologie)
+- [Architektura](#architektura)
+- [Instalace](#instalace)
+- [Konfigurace](#konfigurace)
+- [Použití](#použití)
+- [Vývoj](#vývoj)
+- [Deployment](#deployment)
 
-### 🎨 UI/UX vylepšení
-- ✅ **Moderní design system** - konzistentní vzhled s CSS proměnnými
-- ✅ **Responzivní design** - perfektní zobrazení na všech zařízeních  
-- ✅ **Plynulé animace** - pokročilé CSS animace a přechody
-- ✅ **Přístupnost (A11y)** - ARIA labely, focus management
-- ✅ **Glass morphism efekty** - moderní skleněné panely
+## 🎯 Přehled
 
-### 🗺️ Mapa a data
-- ✅ **Reálné koordináty** - všech 41 areálů s ověřenými lat/lng
-- ✅ **Interaktivní markers** - barevné rozlišení podle rizika
-- ✅ **Pokročilé popupy** - detailní informace s akcemi
-- ✅ **Leaflet optimalizace** - výkonné zobrazení map
+JVS Management System je pokročilá Progressive Web Application (PWA) navržená pro efektivní správu vodárenských areálů v Jihočeském kraji. Aplikace kombinuje moderní webové technologie s real-time databází a offline podporou.
 
-### 🤖 AI Integration  
-- ✅ **Claude AI přes Puter.js** - pokročilá integrace bez API klíčů
-- ✅ **Offline režim** - inteligentní fallback odpovědi
-- ✅ **Modulární AI služba** - snadno rozšiřitelná architektura
-- ✅ **Contextové odpovědi** - AI rozumí aktuálnímu stavu dat
+### Klíčové vlastnosti
 
-### 💾 Data management
-- ✅ **Firebase/Firestore** - cloudové úložiště s real-time aktualizacemi
-- ✅ **Offline-first přístup** - mock data pro vývoj a testing
-- ✅ **Caching strategie** - ServiceWorker s inteligentní cache
-- ✅ **Error handling** - robustní zpracování chyb
+- ✅ **41 reálných areálů** s přesnými GPS souřadnicemi
+- 🗺️ **Interaktivní mapa** s clustering a barevnými markery
+- 📱 **PWA** - instalovatelná, offline-first
+- 🔥 **Firestore** - real-time synchronizace dat
+- 📍 **GPS/RTK navigace** - přesné navádění k areálům
+- 🎨 **Moderní UI/UX** - mobilní-first design
+- 🤖 **AI asistent** - inteligentní dotazy a predikce
 
-### ⚡ PWA funkce
-- ✅ **Plně funkční PWA** - instalovatelná aplikace
-- ✅ **Service Worker v2.0** - pokročilé cachování a offline podpora
-- ✅ **App Manifest** - správná konfigurace pro app stores
-- ✅ **Background sync** - synchronizace při obnovení připojení
+## ⚡ Funkce
 
-## 📁 Nová struktura projektu
+### 1. Interaktivní Mapa
 
-```
-JVS-Refactored-Complete/
-├── index.html              # Hlavní HTML soubor
-├── manifest.json           # PWA manifest
-├── sw.js                   # Service Worker
-└── src/
-    ├── app.js             # Hlavní aplikace
-    ├── assets/
-    │   └── css/
-    │       ├── main.css           # Základní styly
-    │       ├── components.css     # UI komponenty
-    │       ├── map.css           # Mapa a markery
-    │       ├── animations.css    # Animace a efekty
-    │       └── ai-components.css # AI chat a modály
-    ├── services/
-    │   ├── data.service.js        # Správa dat a Firebase
-    │   ├── map.service.js         # Leaflet mapa
-    │   └── ai.service.js          # AI asistent
-    └── modules/
-        └── filters.module.js      # Filtry a vyhledávání
-```
+- **Leaflet s MarkerCluster** - efektivní zobrazení velkého množství bodů
+- **Barevné markery podle rizika**:
+  - 🔴 Kategorie I. (vysoké riziko)
+  - 🟠 Kategorie II. (střední riziko)
+  - 🟢 Bez kategorie (standardní)
+- **Custom popups** s detailními informacemi
+- **Bottom-sheet panel** pro detail areálu
+- **Zoom to bounds** při filtrování
 
-## 🔥 Klíčové vylepšení
+### 2. Pokročilé Filtry
 
-### 1. **Profesionální architektura**
-- Separation of concerns
-- Dependency injection
-- Event-driven komunikace
-- Modulární design patterns
+- **Textové vyhledávání** (název, okres, poznámky)
+- **Kategorie rizika** (I., II., bez kategorie)
+- **Okres** (CB, TA, PT, CK, PI, ST)
+- **Slider rizika údržby** (0-100%)
+- **Real-time statistiky** při změně filtrů
+- **Kombinované filtry** s debounce
 
-### 2. **Výkonnostní optimalizace**
-- Lazy loading modulů
-- Efficient event handling
-- Memory management
-- Network request optimization
+### 3. GPS/RTK Navigace
 
-### 3. **Developer Experience**
-- Čistý, komentovaný kód
-- Konzistentní naming conventions
-- Error boundaries
-- Debugging utilities
+- **Real-time pozice** s přesností ±2cm (simulace RTK)
+- **Směrování k areálu** s výpočtem vzdálenosti
+- **Kompas heading** pomocí device orientation
+- **ETA kalkulace** na základě rychlosti
+- **Live tracking** na mapě
 
-### 4. **User Experience**
-- Rychlé načítání
-- Smooth animace
-- Intuitivní ovládání  
-- Accessibility support
+### 4. Plánovač Tras
+
+- **Až 10 bodů** v trase
+- **Optimalizace pořadí** návštěv
+- **Výpočet vzdálenosti** a času
+- **Vizualizace trasy** na mapě
+- **Export trasy** (GPX, GeoJSON)
+
+### 5. Offline Podpora
+
+- **Cache-First strategie** pro assets
+- **IndexedDB** pro Firestore data
+- **Background sync** pro offline změny
+- **Update notification** při nové verzi
+- **Install prompt** pro PWA
+
+### 6. AI Asistent (Gemini)
+
+- **Přirozené dotazy** v češtině
+- **Překlad do Firestore queries**
+- **Predikce údržby** pomocí ML
+- **Generování protokolů** PDF
+- **Chat UI** s historií
 
 ## 🛠️ Technologie
 
-- **Frontend**: ES6+ Modules, CSS Grid/Flexbox, CSS Custom Properties
-- **Mapa**: Leaflet.js s custom markers a popupy
-- **UI Framework**: Tailwind CSS + Custom Design System
-- **AI**: Claude 3.5 Sonnet via Puter.js
-- **Data**: Firebase/Firestore + IndexedDB backup
-- **PWA**: Service Worker v2.0, App Manifest
-- **Build**: No-build ES Modules (modern browsers)
+### Frontend
 
-## 🎯 Výsledek
+- **Vanilla JavaScript** (ES6+ Modules)
+- **Leaflet.js** - interaktivní mapy
+- **Leaflet.markercluster** - clustering markerů
+- **Tailwind CSS** - utility-first styling
+- **Font Awesome** - ikony
 
-Máte nyní **moderní, profesionální a škálovatelnou aplikaci** která:
-- Splňuje všechny původní požadavky
-- Přidává pokročilé funkce (AI, PWA, offline režim)
-- Má čistou architekturu pro snadnou údržbu
-- Poskytuje vynikající uživatelský zážitek
-- Je připravena pro produkční nasazení
+### Backend & Database
 
-**Aplikace je kompletní a připravena k použití! 🎉**
+- **Firebase** (v9 Modular SDK)
+- **Firestore** - NoSQL real-time database
+- **Firebase Auth** - autentizace
+- **Cloud Functions** - serverless API
+
+### PWA & Performance
+
+- **Service Worker** - offline caching
+- **IndexedDB** - lokální databáze
+- **Web App Manifest** - instalace
+- **Workbox** (optional) - advanced caching
+
+### AI & ML
+
+- **Google Gemini API** - AI asistent
+- **TensorFlow.js** (optional) - predikce údržby
+
+## 🏗️ Architektura
+
+### Adresářová Struktura
+
+```
+FOREST/
+├── src/
+│   ├── core/
+│   │   └── state.js              # Centralizovaný state management
+│   ├── services/
+│   │   ├── firestore.service.js  # Firestore real-time DB
+│   │   ├── map.service.enhanced.js # Leaflet s clustering
+│   │   └── ai.service.js         # Gemini AI integration
+│   ├── modules/
+│   │   ├── filters.module.js     # Filtrovací systém
+│   │   ├── routes.module.js      # Plánovač tras
+│   │   ├── gps.module.js         # GPS/RTK navigace
+│   │   └── ui.module.js          # UI komponenty
+│   ├── components/
+│   │   ├── modal.component.js    # Modal dialogy
+│   │   ├── toast.component.js    # Notifikace
+│   │   └── bottomsheet.component.js # Bottom sheet
+│   ├── assets/
+│   │   ├── css/
+│   │   │   ├── main.css
+│   │   │   ├── components.css
+│   │   │   ├── map-enhanced.css
+│   │   │   └── animations.css
+│   │   └── icons/
+│   └── sw-enhanced.js            # Service Worker
+├── index.html
+├── manifest.json
+└── README.md
+```
+
+### State Management
+
+Aplikace používá **Proxy-based reactive state** pro centralizovanou správu stavu:
+
+```javascript
+import { stateManager, state } from './core/state.js';
+
+// Subscribe to changes
+stateManager.subscribe('areals', (newValue, oldValue) => {
+  console.log('Areals updated:', newValue);
+});
+
+// Update state
+stateManager.set('areals', newAreals);
+```
+
+### Modular Architecture
+
+Každý modul je samostatný ES6 modul s jasně definovaným API:
+
+```javascript
+// Service pattern
+class FirestoreService {
+  async initialize() { }
+  subscribeToAreals(callback, options) { }
+  async addAreal(data) { }
+}
+
+export const firestoreService = new FirestoreService();
+```
+
+## 📦 Instalace
+
+### Požadavky
+
+- Node.js 18+ (pro development tools)
+- Moderní prohlížeč (Chrome 90+, Firefox 88+, Safari 14+)
+- Firebase projekt
+
+### Krok 1: Clone Repository
+
+```bash
+git clone https://github.com/Dominik-88/FOREST.git
+cd FOREST
+```
+
+### Krok 2: Firebase Setup
+
+1. Vytvořte Firebase projekt na [console.firebase.google.com](https://console.firebase.google.com)
+2. Povolte Firestore Database
+3. Zkopírujte Firebase config
+
+### Krok 3: Konfigurace
+
+Upravte `src/services/firestore.service.js`:
+
+```javascript
+const FIREBASE_CONFIG = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+```
+
+### Krok 4: Migrace Dat
+
+Spusťte migration script pro import 41 areálů do Firestore:
+
+```bash
+node scripts/migrate-to-firestore.js
+```
+
+### Krok 5: Spuštění
+
+```bash
+# Development server
+npx serve .
+
+# Nebo použijte VS Code Live Server
+```
+
+Otevřete `http://localhost:3000`
+
+## ⚙️ Konfigurace
+
+### Firebase Rules
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /areals/{arealId} {
+      allow read: if true;  // Public read
+      allow write: if request.auth != null;  // Authenticated write
+    }
+  }
+}
+```
+
+### Service Worker
+
+Upravte cache strategie v `src/sw-enhanced.js`:
+
+```javascript
+const CACHE_VERSION = 'jvs-v2.0.0';
+const MAX_DYNAMIC_CACHE_SIZE = 50;
+const MAX_IMAGE_CACHE_SIZE = 30;
+```
+
+### Map Configuration
+
+Upravte výchozí nastavení mapy v `src/core/state.js`:
+
+```javascript
+map: {
+    center: [49.2, 14.4],  // South Bohemia
+    zoom: 9,
+    bounds: null
+}
+```
+
+## 🚀 Použití
+
+### Základní Workflow
+
+1. **Otevřete aplikaci** - mapa se načte s 41 areály
+2. **Filtrujte areály** - podle kategorie, okresu, textu
+3. **Klikněte na marker** - zobrazí se detail v popupu
+4. **Přidejte do trasy** - naplánujte návštěvy
+5. **Navigujte** - zapněte GPS a sledujte pozici
+
+### Klávesové Zkratky
+
+- `Ctrl + F` - Focus na vyhledávání
+- `Ctrl + M` - Toggle mapa/seznam
+- `Ctrl + R` - Reset filtrů
+- `Esc` - Zavřít modal/panel
+
+### Export Dat
+
+```javascript
+// CSV export
+window.dispatchEvent(new CustomEvent('exportData', {
+  detail: { format: 'csv', data: filteredAreals }
+}));
+
+// GeoJSON export
+window.dispatchEvent(new CustomEvent('exportData', {
+  detail: { format: 'geojson', data: filteredAreals }
+}));
+```
+
+## 👨‍💻 Vývoj
+
+### Development Workflow
+
+```bash
+# 1. Vytvořte feature branch
+git checkout -b feature/my-feature
+
+# 2. Vyvíjejte a testujte
+# 3. Commit changes
+git add .
+git commit -m "feat: add new feature"
+
+# 4. Push a create PR
+git push origin feature/my-feature
+```
+
+### Code Style
+
+- **ES6+ syntax** - arrow functions, destructuring, async/await
+- **Modular design** - jeden modul = jeden soubor
+- **JSDoc comments** - dokumentace funkcí
+- **Consistent naming** - camelCase pro proměnné, PascalCase pro třídy
+
+### Testing
+
+```bash
+# Unit tests (future)
+npm test
+
+# E2E tests (future)
+npm run test:e2e
+```
+
+## 🌐 Deployment
+
+### GitHub Pages
+
+```bash
+# Build pro production
+npm run build
+
+# Deploy na GitHub Pages
+npm run deploy
+```
+
+### Firebase Hosting
+
+```bash
+# Install Firebase CLI
+npm install -g firebase-tools
+
+# Login
+firebase login
+
+# Initialize
+firebase init hosting
+
+# Deploy
+firebase deploy
+```
+
+### Vercel
+
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Deploy
+vercel
+```
+
+## 📊 Statistiky Projektu
+
+- **41 areálů** v 6 okresech
+- **181,947 m²** celková plocha
+- **10,544 m** celková délka oplocení
+- **95% cíl** dokončení
+- **3 kategorie** rizika
+
+## 🤝 Přispívání
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
+
+## 👤 Autor
+
+**Dominik Schmied**
+- GitHub: [@Dominik-88](https://github.com/Dominik-88)
+- Email: d.schmied@lantaron.cz
+
+## 🙏 Poděkování
+
+- [Leaflet](https://leafletjs.com/) - amazing mapping library
+- [Firebase](https://firebase.google.com/) - real-time database
+- [Tailwind CSS](https://tailwindcss.com/) - utility-first CSS
+- [Font Awesome](https://fontawesome.com/) - icons
+
+---
+
+**Made with ❤️ in Czech Republic**
