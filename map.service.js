@@ -172,7 +172,9 @@ class MapService {
      */
     addCustomControls() {
         // Remove default zoom control (we'll add our own via UI)
-        this.map.removeControl(this.map.zoomControl);
+        if (this.map.zoomControl) {
+            this.map.removeControl(this.map.zoomControl);
+        }
         
         // Customize attribution
         this.map.attributionControl.setPrefix('<a href="https://leafletjs.com/">Leaflet</a>');
@@ -779,3 +781,4 @@ export const mapService = new MapService();
 window.mapService = mapService;
 
 export default mapService;
+
