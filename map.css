@@ -1,0 +1,634 @@
+/* =============================================
+   JVS Management System - Map Styles
+   Map Container, Controls, and Overlays
+   ============================================ */
+
+/* =============================================
+   MAP CONTAINER
+   ============================================ */
+
+#mapContainer {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* Map Loading Overlay */
+#mapLoading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: opacity var(--transition-slow);
+}
+
+#mapLoading.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* =============================================
+   MAP CONTROLS
+   ============================================ */
+
+.map-controls {
+    position: fixed;
+    bottom: var(--spacing-6);
+    right: var(--spacing-6);
+    z-index: var(--z-fixed);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.control-btn {
+    width: var(--control-size);
+    height: var(--control-size);
+    border: none;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--backdrop-blur));
+    border-radius: var(--border-radius-full);
+    box-shadow: var(--shadow-lg);
+    border: var(--border-width) solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--gray-700);
+    font-size: var(--font-size-lg);
+    transition: all var(--transition-fast);
+    user-select: none;
+}
+
+.control-btn:hover {
+    background: white;
+    color: var(--primary);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: var(--shadow-xl);
+}
+
+.control-btn:active {
+    transform: translateY(-1px) scale(1.02);
+}
+
+.control-btn.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 20px rgba(var(--primary-rgb), 0.4);
+}
+
+/* AI Toggle Special Styling */
+.ai-toggle {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    box-shadow: 0 4px 20px rgba(var(--primary-rgb), 0.3);
+}
+
+.ai-toggle:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 25px rgba(var(--primary-rgb), 0.4);
+}
+
+.ai-toggle.active {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+    animation: pulse 2s infinite;
+}
+
+/* =============================================
+   LEAFLET CUSTOMIZATIONS
+   ============================================ */
+
+/* Custom Marker Styles */
+.custom-marker {
+    border-radius: var(--border-radius-full);
+    box-shadow: var(--shadow-lg);
+    border: 3px solid white;
+    transition: all var(--transition-fast);
+}
+
+.custom-marker:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-xl);
+}
+
+.marker-high-risk {
+    background: var(--danger);
+    animation: pulse 2s infinite;
+}
+
+.marker-medium-risk {
+    background: var(--warning);
+}
+
+.marker-low-risk {
+    background: var(--success);
+}
+
+.marker-completed {
+    background: var(--gray-400);
+    opacity: 0.7;
+}
+
+/* Leaflet Popup Customization */
+.leaflet-popup-content-wrapper {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--backdrop-blur));
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-xl);
+    border: var(--border-width) solid var(--glass-border);
+    padding: 0;
+    overflow: hidden;
+}
+
+.leaflet-popup-content {
+    margin: 0;
+    padding: var(--spacing-4);
+    font-family: var(--font-family);
+    line-height: 1.5;
+    color: var(--gray-800);
+}
+
+.leaflet-popup-tip {
+    background: var(--glass-bg);
+    border: var(--border-width) solid var(--glass-border);
+}
+
+/* Leaflet Control Customization */
+.leaflet-control-zoom {
+    border: none !important;
+}
+
+.leaflet-control-zoom a {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(var(--backdrop-blur));
+    border: var(--border-width) solid var(--glass-border) !important;
+    color: var(--gray-700) !important;
+    font-weight: 600;
+    transition: all var(--transition-fast);
+}
+
+.leaflet-control-zoom a:hover {
+    background: white !important;
+    color: var(--primary) !important;
+    transform: scale(1.05);
+}
+
+.leaflet-control-attribution {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(10px);
+    font-size: 11px !important;
+    border-radius: var(--border-radius) !important;
+    margin: var(--spacing-2) !important;
+    padding: var(--spacing-1) var(--spacing-2) !important;
+}
+
+/* Route Line Styling */
+.route-line {
+    stroke: var(--primary);
+    stroke-width: 4;
+    stroke-opacity: 0.8;
+    fill: none;
+    stroke-dasharray: 10, 5;
+    animation: dash 20s linear infinite;
+}
+
+@keyframes dash {
+    to {
+        stroke-dashoffset: -100;
+    }
+}
+
+/* Cluster Markers */
+.marker-cluster {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--primary);
+    border-radius: var(--border-radius-full);
+    color: var(--primary);
+    font-weight: 700;
+    box-shadow: var(--shadow-lg);
+    transition: all var(--transition-fast);
+}
+
+.marker-cluster:hover {
+    transform: scale(1.1);
+    background: var(--primary);
+    color: white;
+}
+
+/* =============================================
+   POPUP CONTENT STYLES
+   ============================================ */
+
+.popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-3);
+    padding-bottom: var(--spacing-2);
+    border-bottom: var(--border-width) solid var(--gray-200);
+}
+
+.popup-title {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--gray-900);
+    margin: 0;
+}
+
+.popup-category {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.category-high {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+    border: var(--border-width) solid var(--danger);
+}
+
+.category-medium {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+    border: var(--border-width) solid var(--warning);
+}
+
+.category-low {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    border: var(--border-width) solid var(--success);
+}
+
+.popup-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-3);
+}
+
+.info-item {
+    padding: var(--spacing-2);
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    text-align: center;
+}
+
+.info-value {
+    display: block;
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.info-label {
+    font-size: var(--font-size-xs);
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: var(--spacing-1);
+}
+
+.popup-actions {
+    display: flex;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-3);
+    padding-top: var(--spacing-3);
+    border-top: var(--border-width) solid var(--gray-200);
+}
+
+.popup-btn {
+    flex: 1;
+    padding: var(--spacing-2);
+    border: var(--border-width) solid var(--gray-300);
+    background: white;
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-1);
+}
+
+.popup-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+/* =============================================
+   AREALS LIST STYLES
+   ============================================ */
+
+.areals-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.areal-item {
+    background: white;
+    border: var(--border-width) solid var(--gray-200);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-3);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+.areal-item:hover {
+    background: var(--gray-50);
+    border-color: var(--primary);
+    transform: translateX(4px);
+    box-shadow: var(--shadow-md);
+}
+
+.areal-item.active {
+    background: rgba(var(--primary-rgb), 0.05);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+}
+
+.areal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-2);
+}
+
+.areal-name {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--gray-900);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.areal-district {
+    background: var(--gray-100);
+    color: var(--gray-600);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.areal-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-2);
+    font-size: var(--font-size-xs);
+    color: var(--gray-600);
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+}
+
+.areal-actions {
+    display: flex;
+    gap: var(--spacing-1);
+    margin-top: var(--spacing-2);
+    padding-top: var(--spacing-2);
+    border-top: var(--border-width) solid var(--gray-100);
+}
+
+.action-btn {
+    padding: var(--spacing-1);
+    border: none;
+    background: var(--gray-100);
+    border-radius: var(--border-radius);
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    font-size: var(--font-size-xs);
+}
+
+.action-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+.action-btn.route-active {
+    background: var(--warning);
+    color: white;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-8) var(--spacing-4);
+    color: var(--gray-500);
+}
+
+.empty-state i {
+    font-size: var(--font-size-3xl);
+    color: var(--gray-300);
+    margin-bottom: var(--spacing-4);
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: var(--font-size-sm);
+}
+
+/* =============================================
+   ROUTE PLANNER STYLES
+   ============================================ */
+
+.route-info {
+    background: rgba(var(--primary-rgb), 0.05);
+    border: var(--border-width) solid rgba(var(--primary-rgb), 0.2);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-3);
+    margin-bottom: var(--spacing-4);
+}
+
+.route-points {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.route-point {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2);
+    background: white;
+    border: var(--border-width) solid var(--gray-200);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--spacing-2);
+    transition: all var(--transition-fast);
+}
+
+.route-point:hover {
+    background: var(--gray-50);
+    transform: translateX(2px);
+}
+
+.route-number {
+    width: 24px;
+    height: 24px;
+    background: var(--primary);
+    color: white;
+    border-radius: var(--border-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.route-point-name {
+    flex: 1;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--gray-800);
+    margin: 0;
+}
+
+.remove-point {
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: var(--danger);
+    color: white;
+    border-radius: var(--border-radius-full);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.remove-point:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+.route-result {
+    background: var(--success);
+    color: white;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-3);
+}
+
+.route-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-3);
+}
+
+.summary-item {
+    text-align: center;
+}
+
+.summary-label {
+    display: block;
+    font-size: var(--font-size-xs);
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--spacing-1);
+}
+
+.summary-value {
+    display: block;
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+}
+
+/* =============================================
+   RESPONSIVE MAP STYLES
+   ============================================ */
+
+@media (max-width: 768px) {
+    .map-controls {
+        bottom: var(--spacing-4);
+        right: var(--spacing-4);
+        gap: var(--spacing-1);
+    }
+    
+    .control-btn {
+        width: 44px;
+        height: 44px;
+        font-size: var(--font-size-base);
+    }
+    
+    .leaflet-popup-content-wrapper {
+        max-width: 280px !important;
+    }
+    
+    .popup-info {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-1);
+    }
+    
+    .popup-actions {
+        flex-direction: column;
+    }
+    
+    .areals-list {
+        max-height: 300px;
+    }
+    
+    .areal-details {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-1);
+    }
+}
+
+@media (max-width: 480px) {
+    .map-controls {
+        bottom: var(--spacing-3);
+        right: var(--spacing-3);
+    }
+    
+    .control-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .route-summary {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-2);
+        text-align: center;
+    }
+}
