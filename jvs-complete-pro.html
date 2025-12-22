@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0055ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="JVS Management System - Profesionální správa 41 vodárenských areálů s AI asistentem, GPS navigací a real-time analytics">
+<title>JVS Management PRO | Vodárenský Systém</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<style>
+:root{--primary:#0055ff;--primary-dark:#0044cc;--primary-light:#4c8cff;--accent:#7c3aed;--success:#10b981;--danger:#ef4444;--warning:#f59e0b;--secondary:#64748b;--purple:#a855f7;--bg-glass:rgba(255,255,255,0.95);--bg-deep:#0a0f1e;--text-dark:#1e293b;--text-muted:#64748b;--text-light:#f8fafc;--shadow-sm:0 1px 2px 0 rgb(0 0 0/0.05);--shadow-md:0 4px 6px -1px rgb(0 0 0/0.1);--shadow-lg:0 10px 15px -3px rgb(0 0 0/0.1);--shadow-xl:0 20px 25px -5px rgb(0 0 0/0.1);--radius:14px;--radius-sm:8px;--radius-lg:20px;--transition:all 0.3s cubic-bezier(0.4,0,0.2,1);--glass-blur:blur(16px);}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Inter',sans-serif;overflow:hidden;height:100vh;height:100dvh;width:100vw;color:var(--text-dark);background:#f1f5f9;position:relative;}
+button{font-family:inherit;cursor:pointer;}input,select,textarea{font-family:inherit;}
+#mapWrapper{position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;transition:filter 0.3s;}
+#map{height:100%;width:100%;background:#e5e7eb;}
+.map-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-glass);backdrop-filter:var(--glass-blur);padding:30px 50px;border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);z-index:9999;text-align:center;}
+.spinner{width:50px;height:50px;border:4px solid #e2e8f0;border-top-color:var(--primary);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 15px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.fab-btn{pointer-events:auto;position:fixed;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:none;font-size:22px;box-shadow:var(--shadow-lg);transition:var(--transition);z-index:1100;backdrop-filter:var(--glass-blur);}
+.fab-btn:hover{transform:scale(1.1);}.fab-btn:active{transform:scale(0.95);}
+.menu-fab{top:20px;left:20px;background:var(--primary);color:white;}
+.add-fab{top:20px;right:20px;background:var(--success);color:white;}
+.add-fab.active{background:var(--danger);transform:rotate(45deg);}
+.ai-fab{bottom:90px;right:20px;background:var(--accent);color:white;animation:pulse-ai 2s infinite;}
+.gps-fab{bottom:160px;right:20px;background:var(--warning);color:white;}
+.gps-fab.active{background:var(--success);animation:pulse-gps 1.5s infinite;}
+@keyframes pulse-ai{0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,0.7);}50%{box-shadow:0 0 0 15px rgba(124,58,237,0);}}
+@keyframes pulse-gps{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.7);}50%{box-shadow:0 0 0 12px rgba(16,185,129,0);}}
+.quick-stats{pointer-events:auto;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-glass);backdrop-filter:var(--glass-blur);padding:14px 32px;border-radius:50px;box-shadow:var(--shadow-xl);display:flex;gap:28px;z-index:900;border:1px solid rgba(255,255,255,0.6);}
+.qs-item{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.qs-val{font-size:20px;font-weight:800;color:var(--primary);}
+.qs-lbl{font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+.qs-divider{width:1px;height:32px;background:linear-gradient(to bottom,transparent,#e2e8f0,transparent);}
+.sidebar{pointer-events:auto;position:fixed;top:0;left:0;bottom:0;width:420px;max-width:90vw;background:var(--bg-glass);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);box-shadow:10px 0 40px rgba(0,0,0,0.12);transform:translateX(-100%);transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);z-index:1050;display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,0.4);}
+.sidebar.active{transform:translateX(0);}
+.sidebar-header{padding:28px 24px;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:white;position:relative;overflow:hidden;}
+.sidebar-header::before{content:'';position:absolute;top:-50%;right:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,0.1) 0%,transparent 70%);animation:rotate 20s linear infinite;}
+@keyframes rotate{to{transform:rotate(360deg);}}
+.brand-row{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1;}
+.app-brand{display:flex;align-items:center;gap:14px;}
+.brand-icon{width:48px;height:48px;background:rgba(255,255,255,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;backdrop-filter:blur(10px);border:2px solid rgba(255,255,255,0.3);}
+.brand-text h1{font-size:22px;font-weight:800;margin-bottom:2px;text-shadow:0 2px 4px rgba(0,0,0,0.1);}
+.brand-text p{font-size:11px;opacity:0.85;font-weight:500;}
+.close-sidebar{background:rgba(255,255,255,0.15);border:none;color:white;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;transition:var(--transition);backdrop-filter:blur(10px);}
+.close-sidebar:hover{background:rgba(255,255,255,0.25);transform:translateX(-3px);}
+.header-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px;position:relative;z-index:1;}
+.hstat{background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);padding:12px;border-radius:10px;text-align:center;border:1px solid rgba(255,255,255,0.2);}
+.hstat-val{display:block;font-size:24px;font-weight:800;margin-bottom:4px;}
+.hstat-lbl{font-size:10px;opacity:0.9;text-transform:uppercase;letter-spacing:0.5px;}
+.sidebar-content{overflow-y:auto;flex:1;padding:20px;scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent;}
+.sidebar-content::-webkit-scrollbar{width:6px;}
+.sidebar-content::-webkit-scrollbar-track{background:transparent;}
+.sidebar-content::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:10px;}
+.sidebar-content::-webkit-scrollbar-thumb:hover{background:#94a3b8;}
+.panel-section{background:white;border-radius:var(--radius);margin-bottom:16px;border:1px solid #e2e8f0;overflow:hidden;transition:var(--transition);}
+.panel-section:hover{box-shadow:var(--shadow-md);}
+.panel-head{padding:18px 20px;font-weight:700;font-size:14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:#475569;background:#fafbfc;border-bottom:1px solid transparent;transition:var(--transition);}
+.panel-head:hover{background:#f1f5f9;}
+.panel-head i.icon{margin-right:10px;color:var(--primary);font-size:16px;}
+.panel-head .chevron{transition:transform 0.3s;color:var(--text-muted);font-size:14px;}
+.panel-section.open .panel-head{background:white;border-bottom-color:#e2e8f0;}
+.panel-section.open .chevron{transform:rotate(180deg);}
+.panel-body{max-height:0;overflow:hidden;opacity:0;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);}
+.panel-section.open .panel-body{max-height:3000px;padding:20px;opacity:1;}
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:11px;font-weight:700;color:#64748b;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;}
+.form-input,.form-select,.form-textarea{width:100%;padding:12px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;background:#f8fafc;transition:var(--transition);color:var(--text-dark);}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--primary);background:white;box-shadow:0 0 0 4px rgba(0,85,255,0.08);}
+.form-textarea{resize:vertical;min-height:80px;}
+.search-wrapper{position:relative;}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px;pointer-events:none;}
+.search-input{padding-left:42px;}
+.clear-search{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);font-size:16px;padding:6px;border-radius:6px;transition:var(--transition);}
+.clear-search:hover{background:#f1f5f9;color:var(--danger);}
+.checkbox-group{display:flex;flex-direction:column;gap:10px;}
+.checkbox-item{display:flex;align-items:center;gap:10px;}
+.checkbox-item input[type="checkbox"]{width:20px;height:20px;cursor:pointer;accent-color:var(--primary);}
+.checkbox-label{font-size:13px;color:var(--text-dark);cursor:pointer;display:flex;align-items:center;gap:8px;flex:1;}
+.risk-indicator{width:12px;height:12px;border-radius:50%;display:inline-block;}
+.risk-indicator.high{background:var(--danger);box-shadow:0 0 8px rgba(239,68,68,0.4);}
+.risk-indicator.medium{background:var(--warning);box-shadow:0 0 8px rgba(245,158,11,0.4);}
+.risk-indicator.low{background:var(--secondary);box-shadow:0 0 8px rgba(100,116,139,0.4);}
+.range-wrapper{margin-top:8px;}
+.form-range{width:100%;height:6px;border-radius:10px;background:linear-gradient(to right,var(--success) 0%,var(--warning) 50%,var(--danger) 100%);outline:none;-webkit-appearance:none;appearance:none;}
+.form-range::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:white;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:3px solid var(--primary);}
+.form-range::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:white;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:3px solid var(--primary);}
+.range-labels{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text-muted);}
+.risk-value{color:var(--primary);font-weight:700;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:10px;border:none;font-weight:600;font-size:14px;transition:var(--transition);width:100%;position:relative;overflow:hidden;}
+.btn::before{content:'';position:absolute;top:50%;left:50%;width:0;height:0;border-radius:50%;background:rgba(255,255,255,0.3);transform:translate(-50%,-50%);transition:width 0.6s,height 0.6s;}
+.btn:active::before{width:300px;height:300px;}
+.btn-primary{background:var(--primary);color:white;}
+.btn-primary:hover{background:var(--primary-dark);box-shadow:0 6px 20px rgba(0,85,255,0.3);}
+.btn-success{background:var(--success);color:white;}
+.btn-success:hover{background:#059669;box-shadow:0 6px 20px rgba(16,185,129,0.3);}
+.btn-warning{background:var(--warning);color:white;}
+.btn-warning:hover{background:#d97706;}
+.btn-danger{background:#fee2e2;color:var(--danger);}
+.btn-danger:hover{background:var(--danger);color:white;}
+.btn-secondary{background:#f1f5f9;color:var(--text-dark);}
+.btn-secondary:hover{background:#e2e8f0;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none!important;}
+.filter-actions,.export-actions{display:flex;gap:10px;margin-top:16px;}
+.export-btn{flex:1;padding:10px 16px;background:white;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:600;color:var(--text-dark);transition:var(--transition);display:flex;align-items:center;justify-content:center;gap:8px;}
+.export-btn:hover{background:var(--primary);color:white;border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.stat-card{background:#f8fafc;padding:16px;border-radius:12px;border:1px solid #f1f5f9;transition:var(--transition);text-align:center;}
+.stat-card:hover{transform:translateY(-3px);background:white;box-shadow:var(--shadow-md);}
+.stat-card-val{font-size:28px;font-weight:800;color:var(--primary);display:block;margin-bottom:4px;}
+.stat-card-lbl{font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;}
+.stat-card.success .stat-card-val{color:var(--success);}
+.stat-card.danger .stat-card-val{color:var(--danger);}
+.stat-card.warning .stat-card-val{color:var(--warning);}
+.areals-list{display:flex;flex-direction:column;gap:10px;max-height:400px;overflow-y:auto;padding-right:4px;}
+.areal-item{background:white;padding:14px 16px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer;transition:var(--transition);display:flex;justify-content:space-between;align-items:center;}
+.areal-item:hover{transform:translateX(4px);box-shadow:var(--shadow-md);border-color:var(--primary);}
+.areal-info{flex:1;}
+.areal-name{font-weight:700;font-size:14px;color:var(--text-dark);margin-bottom:4px;}
+.areal-meta{font-size:11px;color:var(--text-muted);display:flex;gap:12px;flex-wrap:wrap;}
+.areal-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;}
+.badge-cat1{background:#fee2e2;color:var(--danger);}
+.badge-cat2{background:#fef3c7;color:#d97706;}
+.badge-none{background:#f1f5f9;color:var(--secondary);}
+.areal-actions{display:flex;gap:6px;}
+.areal-action-btn{width:32px;height:32px;border-radius:8px;border:none;background:#f8fafc;color:var(--text-muted);display:flex;align-items:center;justify-content:center;transition:var(--transition);font-size:14px;}
+.areal-action-btn:hover{background:var(--primary);color:white;transform:scale(1.1);}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted);}
+.empty-state i{font-size:48px;margin-bottom:16px;opacity:0.3;}
+.route-info{background:#eff6ff;padding:14px;border-radius:10px;border-left:4px solid var(--primary);margin-bottom:16px;font-size:13px;color:#1e40af;line-height:1.6;}
+.route-points{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;}
+.route-point{background:white;padding:10px 14px;border-radius:8px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:10px;transition:var(--transition);}
+.route-point:hover{box-shadow:var(--shadow-sm);}
+.route-num{width:24px;height:24px;background:var(--primary);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.route-point-name{flex:1;font-size:13px;font-weight:600;color:var(--text-dark);}
+.route-remove{background:none;border:none;color:var(--text-muted);padding:4px 8px;border-radius:6px;transition:var(--transition);}
+.route-remove:hover{background:#fee2e2;color:var(--danger);}
+.route-result{background:#f0fdf4;padding:16px;border-radius:10px;border-left:4px solid var(--success);}
+.route-summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.summary-item{text-align:center;}
+.summary-label{display:block;font-size:11px;color:#166534;margin-bottom:4px;font-weight:600;}
+.summary-value{display:block;font-size:20px;font-weight:800;color:#15803d;}
+.custom-marker-wrapper{background:transparent;border:none;}
+.custom-marker-pin{width:36px;height:36px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);position:relative;border:3px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.25);transition:var(--transition);display:flex;align-items:center;justify-content:center;}
+.custom-marker-pin:hover{transform:rotate(-45deg) scale(1.15);box-shadow:0 6px 20px rgba(0,0,0,0.35);}
+.marker-inner{transform:rotate(45deg);color:white;font-size:16px;}
+.marker-badge{position:absolute;top:-6px;right:-6px;background:white;color:#333;font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.15);transform:rotate(45deg);border:1px solid #e2e8f0;}
+.marker-pulse{animation:marker-pulse 2s infinite;}
+@keyframes marker-pulse{0%,100%{box-shadow:0 4px 12px rgba(0,0,0,0.25);}50%{box-shadow:0 4px 12px rgba(239,68,68,0.6),0 0 0 10px rgba(239,68,68,0);}}
+.marker-cluster{background-clip:padding-box;border-radius:50%;}
+.marker-cluster div{width:38px;height:38px;margin:2px;text-align:center;border-radius:50%;font-weight:800;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;}
+.marker-cluster-small{background-color:rgba(16,185,129,0.5);}
+.marker-cluster-small div{background-color:rgba(16,185,129,0.85);}
+.marker-cluster-medium{background-color:rgba(245,158,11,0.5);}
+.marker-cluster-medium div{background-color:rgba(245,158,11,0.85);}
+.marker-cluster-large{background-color:rgba(239,68,68,0.5);}
+.marker-cluster-large div{background-color:rgba(239,68,68,0.85);}
+.leaflet-popup-content-wrapper{border-radius:14px;padding:0;box-shadow:0 12px 40px rgba(0,0,0,0.15);border:1px solid #e2e8f0;}
+.leaflet-popup-content{margin:0;width:300px!important;}
+.leaflet-popup-tip{background:white;}
+.popup-header{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:white;padding:18px 20px;border-radius:14px 14px 0 0;}
+.popup-title{font-size:16px;font-weight:700;margin-bottom:6px;line-height:1.3;}
+.popup-status{font-size:10px;padding:4px 10px;border-radius:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;display:inline-block;margin-top:4px;}
+.status-done{background:rgba(16,185,129,0.25);color:#10b981;}
+.status-pending{background:rgba(245,158,11,0.25);color:#f59e0b;}
+.popup-body{padding:16px 20px;}
+.popup-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f3f4f6;}
+.popup-row:last-child{border-bottom:none;}
+.popup-label{font-size:12px;color:var(--text-muted);font-weight:600;}
+.popup-value{font-size:13px;color:var(--text-dark);font-weight:700;}
+.popup-weather{background:#f0fdf4;padding:12px;border-radius:8px;margin-top:12px;display:flex;justify-content:space-around;border:1px solid #d1fae5;}
+.weather-item{text-align:center;}
+.weather-icon{font-size:20px;margin-bottom:4px;color:#15803d;}
+.weather-val{font-size:14px;font-weight:700;color:#15803d;display:block;}
+.weather-lbl{font-size:9px;color:#166534;text-transform:uppercase;}
+.popup-actions{display:flex;gap:8px;padding:14px 20px;background:#fafbfc;border-radius:0 0 14px 14px;border-top:1px solid #f3f4f6;}
+.popup-btn{flex:1;padding:10px 14px;background:white;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:700;color:var(--text-dark);transition:var(--transition);display:flex;align-items:center;justify-content:center;gap:6px;}
+.popup-btn:hover{background:var(--primary);color:white;border-color:var(--primary);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,85,255,0.25);}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:2000;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s;}
+.modal-overlay.active{display:flex;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.modal-card{background:white;border-radius:var(--radius-lg);max-width:500px;width:100%;max-height:90vh;overflow:hidden;box-shadow:var(--shadow-xl);animation:slideUp 0.4s cubic-bezier(0.4,0,0.2,1);}
+@keyframes slideUp{from{transform:translateY(50px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-header{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:white;padding:24px;display:flex;justify-content:space-between;align-items:center;}
+.modal-title{font-size:20px;font-weight:800;}
+.modal-close{background:rgba(255,255,255,0.2);border:none;color:white;width:36px;height:36px;border-radius:10px;font-size:24px;display:flex;align-items:center;justify-content:center;transition:var(--transition);backdrop-filter:blur(10px);}
+.modal-close:hover{background:rgba(255,255,255,0.3);transform:rotate(90deg);}
+.modal-body{padding:24px;overflow-y:auto;max-height:calc(90vh - 160px);}
+.modal-footer{padding:20px 24px;background:#fafbfc;border-top:1px solid #e2e8f0;display:flex;gap:12px;}
+.ai-overlay{position:fixed;bottom:0;right:0;width:400px;max-width:90vw;height:600px;max-height:80vh;background:linear-gradient(135deg,#1a0b2e 0%,#2d1b4e 100%);border-radius:var(--radius-lg) var(--radius-lg) 0 0;box-shadow:-5px 0 30px rgba(0,0,0,0.3);z-index:1900;transform:translateY(100%);transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;border:1px solid rgba(168,85,247,0.3);}
+.ai-overlay.active{transform:translateY(0);}
+.ai-header{padding:20px;background:rgba(124,58,237,0.2);border-bottom:1px solid rgba(168,85,247,0.3);display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(10px);}
+.ai-title{color:var(--purple);font-weight:800;font-size:16px;display:flex;align-items:center;gap:10px;}
+.ai-title i{font-size:20px;animation:brain-pulse 2s infinite;}
+@keyframes brain-pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+.ai-close{background:rgba(255,255,255,0.1);border:none;color:white;width:32px;height:32px;border-radius:8px;font-size:18px;transition:var(--transition);}
+.ai-close:hover{background:rgba(255,255,255,0.2);transform:rotate(90deg);}
+.ai-chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;}
+.ai-msg{max-width:85%;padding:12px 16px;border-radius:12px;font-size:13px;line-height:1.6;animation:msgSlide 0.3s;}
+@keyframes msgSlide{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.ai-msg.user{background:var(--primary);color:white;align-self:flex-end;border-bottom-right-radius:4px;}
+.ai-msg.bot{background:rgba(168,85,247,0.15);color:#e9d5ff;align-self:flex-start;border-bottom-left-radius:4px;border:1px solid rgba(168,85,247,0.3);}
+.ai-typing{display:flex;gap:4px;padding:12px 16px;background:rgba(168,85,247,0.15);border-radius:12px;width:60px;align-self:flex-start;}
+.ai-typing span{width:8px;height:8px;background:var(--purple);border-radius:50%;animation:typing 1.4s infinite;}
+.ai-typing span:nth-child(2){animation-delay:0.2s;}
+.ai-typing span:nth-child(3){animation-delay:0.4s;}
+@keyframes typing{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-10px);}}
+.ai-input-area{padding:16px;background:rgba(0,0,0,0.3);border-top:1px solid rgba(168,85,247,0.3);display:flex;gap:10px;}
+.ai-input{flex:1;padding:12px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:10px;color:white;font-size:14px;}
+.ai-input::placeholder{color:rgba(255,255,255,0.5);}
+.ai-input:focus{outline:none;border-color:var(--purple);background:rgba(255,255,255,0.15);box-shadow:0 0 0 4px rgba(168,85,247,0.1);}
+.ai-send{width:48px;height:48px;background:var(--purple);border:none;color:white;border-radius:10px;font-size:18px;transition:var(--transition);}
+.ai-send:hover{background:#9333ea;transform:scale(1.05);}
+.ai-send:active{transform:scale(0.95);}
+.user-location-marker{width:20px;height:20px;position:relative;}
+.user-location-marker::before{content:'';position:absolute;width:14px;height:14px;background:var(--primary);border:3px solid white;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 2px 10px rgba(0,85,255,0.5);}
+.user-location-pulse{position:absolute;width:20px;height:20px;border:2px solid var(--primary);border-radius:50%;top:0;left:0;animation:location-pulse 2s ease-out infinite;}
+@keyframes location-pulse{0%{transform:scale(1);opacity:1;}100%{transform:scale(2.5);opacity:0;}}
+.gps-panel{background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);padding:16px;border-radius:10px;border:1px solid #a7f3d0;margin-bottom:16px;}
+.gps-status{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.gps-label{font-size:12px;font-weight:700;color:#065f46;text-transform:uppercase;}
+.gps-value{font-size:16px;font-weight:800;color:#059669;}
+.gps-accuracy{font-size:11px;color:#047857;margin-top:4px;}
+.gps-coords{font-family:'JetBrains Mono',monospace;font-size:11px;color:#065f46;background:rgba(255,255,255,0.6);padding:8px;border-radius:6px;margin-top:8px;}
+.toast-container{position:fixed;top:90px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;}
+.toast{background:white;padding:14px 24px;border-radius:50px;box-shadow:var(--shadow-xl);display:flex;align-items:center;gap:12px;animation:toastSlide 0.4s cubic-bezier(0.4,0,0.2,1);pointer-events:auto;border:1px solid #e2e8f0;min-width:280px;}
+@keyframes toastSlide{from{transform:translateY(-30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.toast.success{border-left:4px solid var(--success);}
+.toast.success i{color:var(--success);}
+.toast.error{border-left:4px solid var(--danger);}
+.toast.error i{color:var(--danger);}
+.toast.warning{border-left:4px solid var(--warning);}
+.toast.warning i{color:var(--warning);}
+.toast.info{border-left:4px solid var(--primary);}
+.toast.info i{color:var(--primary);}
+.toast i{font-size:18px;}
+.toast-msg{font-size:13px;font-weight:600;color:var(--text-dark);flex:1;}
+.layer-controls{pointer-events:auto;position:fixed;top:90px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:1100;}
+.layer-btn{background:var(--bg-glass);backdrop-filter:var(--glass-blur);border:1px solid rgba(255,255,255,0.6);padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;color:var(--text-dark);transition:var(--transition);display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-md);min-width:120px;}
+.layer-btn:hover{background:white;transform:translateX(-4px);box-shadow:var(--shadow-lg);}
+.layer-btn.active{background:var(--primary);color:white;border-color:var(--primary);}
+.heatmap-legend{pointer-events:auto;position:fixed;bottom:90px;left:20px;background:var(--bg-glass);backdrop-filter:var(--glass-blur);padding:16px;border-radius:12px;box-shadow:var(--shadow-lg);z-index:1100;border:1px solid rgba(255,255,255,0.6);display:none;}
+.heatmap-legend.active{display:block;}
+.legend-title{font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;}
+.legend-gradient{height:20px;border-radius:6px;background:linear-gradient(to right,#3b82f6 0%,#fbbf24 50%,#ef4444 100%);margin-bottom:8px;}
+.legend-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);font-weight:600;}
+@media (max-width:768px){
+.sidebar{width:100%;border-radius:var(--radius-lg) var(--radius-lg) 0 0;top:auto;bottom:0;height:auto;max-height:75vh;transform:translateY(calc(100% - 80px));}
+.sidebar.active{transform:translateY(0);}
+.sidebar-header{cursor:grab;}
+.sidebar-header::after{content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);width:40px;height:4px;background:rgba(255,255,255,0.4);border-radius:2px;z-index:2;}
+.quick-stats{bottom:16px;gap:16px;padding:12px 24px;flex-wrap:wrap;}
+.qs-lbl{display:none;}
+.layer-controls{top:auto;bottom:90px;right:16px;}
+.ai-overlay{width:100%;max-width:100vw;height:70vh;border-radius:var(--radius-lg) var(--radius-lg) 0 0;}
+.fab-btn{width:52px;height:52px;font-size:20px;}
+.menu-fab{top:16px;left:16px;}
+.add-fab{top:16px;right:16px;}
+.ai-fab{bottom:80px;right:16px;}
+.gps-fab{bottom:145px;right:16px;}
+.heatmap-legend{bottom:80px;left:16px;padding:12px;}
+.stats-grid{grid-template-columns:1fr;}
+}
+.hidden{display:none!important;}
+.fade-in{animation:fadeIn 0.5s;}
+.slide-up{animation:slideUp 0.4s cubic-bezier(0.4,0,0.2,1);}
+</style>
+</head>
+<body>
+
+<div id="mapWrapper">
+<div id="map"></div>
+<div class="map-loading" id="mapLoading">
+<div class="spinner"></div>
+<p style="color:var(--text-muted);font-weight:600;">Načítání mapy a dat...</p>
+</div>
+</div>
+
+<button class="fab-btn menu-fab" onclick="toggleSidebar()" aria-label="Menu">
+<i class="fas fa-bars"></i>
+</button>
+
+<button class="fab-btn add-fab" id="addFab" onclick="toggleAddMode()" aria-label="Přidat areál">
+<i class="fas fa-plus"></i>
+</button>
+
+<button class="fab-btn gps-fab" id="gpsFab" onclick="toggleGPS()" aria-label="GPS">
+<i class="fas fa-location-crosshairs"></i>
+</button>
+
+<button class="fab-btn ai-fab" onclick="toggleAI()" aria-label="AI Asistent">
+<i class="fas fa-brain"></i>
+</button>
+
+<div class="quick-stats" id="quickStats">
+<div class="qs-item">
+<span class="qs-val" id="qsCount">41</span>
+<span class="qs-lbl">Areálů</span>
+</div>
+<div class="qs-divider"></div>
+<div class="qs-item">
+<span class="qs-val" id="qsArea">182k</span>
+<span class="qs-lbl">m² Plocha</span>
+</div>
+<div class="qs-divider"></div>
+<div class="qs-item">
+<span class="qs-val" id="qsCritical" style="color:var(--danger);">0</span>
+<span class="qs-lbl">Kritické</span>
+</div>
+</div>
+
+<div class="layer-controls">
+<button class="layer-btn active" onclick="switchLayer('osm')" data-layer="osm">
+<i class="fas fa-map"></i><span>Mapa</span>
+</button>
+<button class="layer-btn" onclick="switchLayer('satellite')" data-layer="satellite">
+<i class="fas fa-satellite"></i><span>Satelit</span>
+</button>
+</div>
+
+<div class="heatmap-legend" id="heatmapLegend">
+<div class="legend-title">Intenzita Rizika</div>
+<div class="legend-gradient"></div>
+<div class="legend-labels">
+<span>Nízké</span>
+<span>Střední</span>
+<span>Vysoké</span>
+</div>
+</div>
+
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-header">
+<div class="brand-row">
+<div class="app-brand">
+<div class="brand-icon"><i class="fas fa-droplet"></i></div>
+<div class="brand-text">
+<h1>JVS Manager</h1>
+<p>Systém správy areálů</p>
+</div>
+</div>
+<button class="close-sidebar" onclick="toggleSidebar()">
+<i class="fas fa-chevron-left"></i>
+</button>
+</div>
+<div class="header-stats">
+<div class="hstat">
+<span class="hstat-val">41</span>
+<span class="hstat-lbl">Areálů</span>
+</div>
+<div class="hstat">
+<span class="hstat-val" id="completedCount">0</span>
+<span class="hstat-lbl">Dokončeno</span>
+</div>
+<div class="hstat">
+<span class="hstat-val" id="highRiskCount">0</span>
+<span class="hstat-lbl">Vysoké riziko</span>
+</div>
+</div>
+</div>
+
+<div class="sidebar-content">
+
+<div class="panel-section open" id="panelFilters">
+<div class="panel-head" onclick="togglePanel('panelFilters')">
+<span><i class="fas fa-filter icon"></i>Filtry a vyhledávání</span>
+<i class="fas fa-chevron-down chevron"></i>
+</div>
+<div class="panel-body">
+<div class="form-group">
+<label class="form-label">Vyhledávání</label>
+<div class="search-wrapper">
+<i class="fas fa-search search-icon"></i>
+<input type="text" id="searchInput" class="form-input search-input" placeholder="Hledat areál, město, okres..." oninput="applyFilters()">
+<button id="clearSearch" class="clear-search hidden" onclick="clearSearchInput()">
+<i class="fas fa-times"></i>
+</button>
+</div>
+</div>
+
+<div class="form-group">
+<label class="form-label">Kategorie rizika</label>
+<div class="checkbox-group">
+<div class="checkbox-item">
+<input type="checkbox" id="catI" name="category" value="I." checked onchange="applyFilters()">
+<label for="catI" class="checkbox-label">
+<span class="risk-indicator high"></span>
+Kategorie I. (Vysoké riziko)
+</label>
+</div>
+<div class="checkbox-item">
+<input type="checkbox" id="catII" name="category" value="II." checked onchange="applyFilters()">
+<label for="catII" class="checkbox-label">
+<span class="risk-indicator medium"></span>
+Kategorie II. (Střední riziko)
+</label>
+</div>
+<div class="checkbox-item">
+<input type="checkbox" id="catNone" name="category" value="" checked onchange="applyFilters()">
+<label for="catNone" class="checkbox-label">
+<span class="risk-indicator low"></span>
+Bez kategorie (Standardní)
+</label>
+</div>
+</div>
+</div>
+
+<div class="form-group">
+<label class="form-label">Minimální riziko údržby</label>
+<div class="range-wrapper">
+<input type="range" id="riskSlider" class="form-range" min="0" max="100" value="0" oninput="updateRiskValue(this.value);applyFilters()">
+<div class="range-labels">
+<span>0%</span>
+<span id="riskValue" class="risk-value">0%</span>
+<span>100%</span>
+</div>
+</div>
+</div>
+
+<div class="form-group">
+<label class="form-label">Okres</label>
+<select id="districtFilter" class="form-select" onchange="applyFilters()">
+<option value="">Všechny okresy</option>
+<option value="CB">České Budějovice</option>
+<option value="TA">Tábor</option>
+<option value="PT">Prachatice</option>
+<option value="CK">Český Krumlov</option>
+<option value="PI">Písek</option>
+<option value="ST">Strakonice</option>
+</select>
+</div>
+
+<div class="form-group">
+<div class="checkbox-item">
+<input type="checkbox" id="heatmapToggle" onchange="toggleHeatmap()">
+<label for="heatmapToggle" class="checkbox-label">
+<i class="fas fa-fire" style="color:var(--danger);"></i>
+Zobrazit heatmapu rizik
+</label>
+</div>
+</div>
+
+<div class="filter-actions">
+<button class="btn btn-primary" onclick="applyFilters()">
+<i class="fas fa-check"></i>Použít filtry
+</button>
+<button class="btn btn-secondary" onclick="resetFilters()">
+<i class="fas fa-undo"></i>Resetovat
+</button>
+</div>
+</div>
+</div>
+
+<div class="panel-section" id="panelStats">
+<div class="panel-head" onclick="togglePanel('panelStats')">
+<span><i class="fas fa-chart-line icon"></i>Přehled statistik</span>
+<i class="fas fa-chevron-down chevron"></i>
+</div>
+<div class="panel-body">
+<div class="stats-grid" id="detailedStats">
+<div class="stat-card">
+<span class="stat-card-val" id="statCount">41</span>
+<span class="stat-card-lbl">Počet areálů</span>
+</div>
+<div class="stat-card">
+<span class="stat-card-val" id="statArea">182k</span>
+<span class="stat-card-lbl">Celkem m²</span>
+</div>
+<div class="stat-card">
+<span class="stat-card-val" id="statFence">10.5k</span>
+<span class="stat-card-lbl">Oplocení (m)</span>
+</div>
+<div class="stat-card success">
+<span class="stat-card-val" id="statDone">0</span>
+<span class="stat-card-lbl">Hotovo (7d)</span>
+</div>
+</div>
+<div class="export-actions">
+<button class="export-btn" onclick="exportCSV()">
+<i class="fas fa-file-csv"></i>Export CSV
+</button>
+<button class="export-btn" onclick="exportGeoJSON()">
+<i class="fas fa-map"></i>Export GeoJSON
+</button>
+</div>
+</div>
+</div>
+
+<div class="panel-section" id="panelAreals">
+<div class="panel-head" onclick="togglePanel('panelAreals')">
+<span><i class="fas fa-list icon"></i>Seznam areálů (<span id="arealsCount">41</span>)</span>
+<i class="fas fa-chevron-down chevron"></i>
+</div>
+<div class="panel-body">
+<div class="areals-list" id="arealsList"></div>
+<div class="empty-state hidden" id="emptyState">
+<i class="fas fa-search"></i>
+<p>Žádné areály neodpovídají zvoleným filtrům.</p>
+</div>
+</div>
+</div>
+
+<div class="panel-section" id="panelRoute">
+<div class="panel-head" onclick="togglePanel('panelRoute')">
+<span><i class="fas fa-route icon"></i>Plánovač tras (<span id="routeCount">0</span>)</span>
+<i class="fas fa-chevron-down chevron"></i>
+</div>
+<div class="panel-body">
+<div class="route-info">
+<p>Vyberte areály kliknutím na mapu nebo pomocí tlačítka <i class="fas fa-plus-circle" style="color:var(--primary);"></i>. Maximálně 10 bodů.</p>
+</div>
+<div class="route-points" id="routePoints"></div>
+<div class="filter-actions">
+<button class="btn btn-warning" id="calculateRoute" onclick="optimizeRoute()" disabled>
+<i class="fas fa-wand-magic-sparkles"></i>Optimalizovat trasu
+</button>
+<button class="btn btn-danger" id="clearRoute" onclick="clearRoute()" disabled>
+<i class="fas fa-trash"></i>Smazat body
+</button>
+</div>
+<div class="route-result hidden" id="routeResult">
+<div class="route-summary">
+<div class="summary-item">
+<span class="summary-label">Celková vzdálenost:</span>
+<span id="routeDistance" class="summary-value">0 km</span>
+</div>
+<div class="summary-item">
+<span class="summary-label">Odhadovaný čas:</span>
+<span id="routeDuration" class="summary-value">0 min</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="panel-section" id="panelGPS">
+<div class="panel-head" onclick="togglePanel('panelGPS')">
+<span><i class="fas fa-satellite-dish icon"></i>GPS & RTK Navigace</span>
+<i class="fas fa-chevron-down chevron"></i>
+</div>
+<div class="panel-body">
+<div class="gps-panel" id="gpsPanel">
+<div class="gps-status">
+<span class="gps-label">Status GPS</span>
+<span class="gps-value" id="gpsStatus">Neaktivní</span>
+</div>
+<div class="gps-accuracy" id="gpsAccuracy">Přesnost: -- m</div>
+<div class="gps-coords" id="gpsCoords">
+Lat: --<br>
+Lng: --
+</div>
+</div>
+<button class="btn btn-success" onclick="toggleGPS()">
+<i class="fas fa-location-arrow"></i>Aktivovat GPS tracking
+</button>
+</div>
+</div>
+
+</div>
+</aside>
+
+<div class="modal-overlay" id="arealModal">
+<div class="modal-card">
+<div class="modal-header">
+<h2 class="modal-title" id="arealModalTitle">Správa areálu</h2>
+<button class="modal-close" onclick="closeArealModal()">×</button>
+</div>
+<div class="modal-body">
+<form id="arealForm" onsubmit="saveAreal(event)">
+<input type="hidden" id="arealId">
+<input type="hidden" id="arealLat">
+<input type="hidden" id="arealLng">
+
+<div class="form-group">
+<label class="form-label">Název objektu</label>
+<input type="text" id="arealNazev" class="form-input" required placeholder="Např. VDJ Amerika II">
+</div>
+
+<div class="stats-grid">
+<div class="form-group">
+<label class="form-label">Okres</label>
+<select id="arealOkres" class="form-select" required>
+<option value="CB">České Budějovice</option>
+<option value="TA">Tábor</option>
+<option value="CK">Český Krumlov</option>
+<option value="PT">Prachatice</option>
+<option value="PI">Písek</option>
+<option value="ST">Strakonice</option>
+</select>
+</div>
+<div class="form-group">
+<label class="form-label">Kategorie</label>
+<select id="arealKategorie" class="form-select">
+<option value="">Bez kategorie</option>
+<option value="I.">I. Vysoká</option>
+<option value="II.">II. Střední</option>
+</select>
+</div>
+</div>
+
+<div class="stats-grid">
+<div class="form-group">
+<label class="form-label">Výměra (m²)</label>
+<input type="number" id="arealVymera" class="form-input" required min="0">
+</div>
+<div class="form-group">
+<label class="form-label">Oplocení (m)</label>
+<input type="number" id="arealOploceni" class="form-input" required min="0">
+</div>
+</div>
+
+<div class="form-group">
+<label class="form-label">Poznámky / Revizní zpráva</label>
+<textarea id="arealPoznamka" class="form-textarea" rows="3" placeholder="Detaily, poznámky, revizní zpráva..."></textarea>
+</div>
+
+<div class="modal-footer">
+<button type="button" class="btn btn-danger" onclick="closeArealModal()" style="flex:1;">
+<i class="fas fa-times"></i>Zrušit
+</button>
+<button type="submit" class="btn btn-primary" style="flex:2;">
+<i class="fas fa-save"></i>Uložit data
+</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+
+<div class="ai-overlay" id="aiOverlay">
+<div class="ai-header">
+<div class="ai-title">
+<i class="fas fa-brain"></i>
+<span>AI Asistent Gemini</span>
+</div>
+<button class="ai-close" onclick="toggleAI()">
+<i class="fas fa-times"></i>
+</button>
+</div>
+<div class="ai-chat" id="aiChat">
+<div class="ai-msg bot">
+Ahoj! Jsem AI asistent pro JVS Management. Mohu vám pomoci s:
+<br>• Analýzou areálů a statistik
+<br>• Generováním reportů
+<br>• Optimalizací tras
+<br>• Predikcí údržby
+<br><br>Zeptejte se mě na cokoliv!
+</div>
+</div>
+<div class="ai-input-area">
+<input type="text" id="aiInput" class="ai-input" placeholder="Zeptejte se AI..." onkeypress="if(event.key==='Enter')sendAI()">
+<button class="ai-send" onclick="sendAI()">
+<i class="fas fa-paper-plane"></i>
+</button>
+</div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-heat/0.2.0/leaflet-heat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<script>
+// =============================================
+// KONFIGURACE
+// =============================================
+const CONFIG={
+defaultCenter:[49.2,14.4],
+defaultZoom:9,
+avgSpeed:50,
+fuelCostPerKm:3.5,
+maintenanceDays:7,
+weatherUpdateInterval:600000,
+storageKey:'jvs_mgmt_data_v3',
+geminiApiKey:'YOUR_GEMINI_API_KEY_HERE',
+maxRoutePoints:10
+};
+
+// =============================================
+// DATA 41 AREÁLŮ
+// =============================================
+let arealData=[
+{id:1,nazev:"VDJ Amerika II",okres:"PI",kategorie:"I.",oploceni:293,vymera:3303,lat:49.305131,lng:14.166126},
+{id:2,nazev:"VDJ Zálužany",okres:"PI",kategorie:"",oploceni:299,vymera:2350,lat:49.553066,lng:14.083041},
+{id:3,nazev:"VDJ Drahonice",okres:"ST",kategorie:"I.",oploceni:376,vymera:5953,lat:49.202902,lng:14.063713},
+{id:4,nazev:"VDJ Vodňany",okres:"ST",kategorie:"I.",oploceni:252,vymera:1594,lat:49.164479,lng:14.178382},
+{id:5,nazev:"VDJ Hlavatce",okres:"CB",kategorie:"",oploceni:424,vymera:7968,lat:49.063584,lng:14.267751},
+{id:6,nazev:"VDJ Zdoba",okres:"CB",kategorie:"II.",oploceni:225,vymera:15523,lat:49.212422,lng:14.338095},
+{id:7,nazev:"VDJ Doudleby",okres:"CB",kategorie:"II.",oploceni:79,vymera:413,lat:48.889039,lng:14.480224},
+{id:8,nazev:"VDJ Jankov",okres:"CB",kategorie:"I.",oploceni:106,vymera:784,lat:48.968517,lng:14.301785},
+{id:9,nazev:"VDJ Hosín II",okres:"CB",kategorie:"I.",oploceni:399,vymera:4173,lat:49.033566,lng:14.492817},
+{id:10,nazev:"VDJ Chlum",okres:"CB",kategorie:"II.",oploceni:63,vymera:535,lat:49.096493,lng:14.388679},
+{id:11,nazev:"VDJ Chotýčany",okres:"CB",kategorie:"II.",oploceni:338,vymera:4775,lat:49.070225,lng:14.519785},
+{id:12,nazev:"VDJ Rudolfov III",okres:"CB",kategorie:"I.",oploceni:174,vymera:1868,lat:48.985786,lng:14.546933},
+{id:13,nazev:"VDJ Rimov - Vesce",okres:"CB",kategorie:"I.",oploceni:99,vymera:662,lat:48.847979,lng:14.467170},
+{id:14,nazev:"VDJ Hosin",okres:"CB",kategorie:"II.",oploceni:125,vymera:809,lat:49.033594,lng:14.492734},
+{id:15,nazev:"VDJ Nové Hodějovice",okres:"CB",kategorie:"I.",oploceni:280,vymera:3200,lat:48.963333,lng:14.458889},
+{id:16,nazev:"VDJ Srubec",okres:"CB",kategorie:"II.",oploceni:195,vymera:1450,lat:49.045678,lng:14.523456},
+{id:17,nazev:"VDJ Borek",okres:"CB",kategorie:"",oploceni:310,vymera:2890,lat:49.012345,lng:14.398765},
+{id:18,nazev:"VDJ Litvínovice",okres:"CB",kategorie:"I.",oploceni:245,vymera:2100,lat:48.956789,lng:14.471234},
+{id:19,nazev:"VDJ Kněžské Dvory",okres:"CB",kategorie:"II.",oploceni:165,vymera:1320,lat:49.087654,lng:14.412345},
+{id:20,nazev:"VDJ Rožnov",okres:"CB",kategorie:"",oploceni:290,vymera:2650,lat:49.123456,lng:14.345678},
+{id:21,nazev:"VDJ Včelná",okres:"CB",kategorie:"I.",oploceni:220,vymera:1890,lat:48.934567,lng:14.512345},
+{id:22,nazev:"VDJ Dobrá Voda",okres:"CB",kategorie:"II.",oploceni:185,vymera:1560,lat:49.098765,lng:14.456789},
+{id:23,nazev:"VDJ Třebín",okres:"CB",kategorie:"",oploceni:270,vymera:2340,lat:49.076543,lng:14.389012},
+{id:24,nazev:"VDJ Šibeniční vrch I",okres:"PT",kategorie:"I.",oploceni:245,vymera:1835,lat:49.025083,lng:13.994111},
+{id:25,nazev:"ÚV Husinecka přehrada",okres:"PT",kategorie:"",oploceni:703,vymera:4908,lat:49.034314,lng:13.996856},
+{id:26,nazev:"VDJ Šibeniční vrch II",okres:"PT",kategorie:"I.",oploceni:340,vymera:3206,lat:49.026710,lng:13.994001},
+{id:27,nazev:"VDJ Ptáčník",okres:"PT",kategorie:"II.",oploceni:239,vymera:1070,lat:49.066068,lng:14.187151},
+{id:28,nazev:"VDJ Domoradice",okres:"CK",kategorie:"I.",oploceni:450,vymera:4148,lat:48.829504,lng:14.327056},
+{id:29,nazev:"VDJ Horní Brána",okres:"CK",kategorie:"I.",oploceni:187,vymera:1665,lat:48.807970,lng:14.329352},
+{id:30,nazev:"VDJ Netřebice",okres:"CK",kategorie:"I.",oploceni:136,vymera:877,lat:48.783277,lng:14.456447},
+{id:31,nazev:"VDJ Plešivec",okres:"CK",kategorie:"I.",oploceni:119,vymera:975,lat:48.802321,lng:14.304831},
+{id:32,nazev:"VDJ Čekanice",okres:"TA",kategorie:"I.",oploceni:450,vymera:6344,lat:49.422197,lng:14.689896},
+{id:33,nazev:"VDJ Svatá Anna",okres:"TA",kategorie:"I.",oploceni:264,vymera:4192,lat:49.401133,lng:14.698640},
+{id:34,nazev:"VDJ Bezděčín",okres:"TA",kategorie:"I.",oploceni:169,vymera:1996,lat:49.322876,lng:14.628459},
+{id:35,nazev:"VDJ Milevsko",okres:"TA",kategorie:"I.",oploceni:129,vymera:823,lat:49.452521,lng:14.344102},
+{id:36,nazev:"VDJ Hodušín",okres:"TA",kategorie:"II.",oploceni:205,vymera:1708,lat:49.429670,lng:14.474214},
+{id:37,nazev:"VDJ Všechov",okres:"TA",kategorie:"I.",oploceni:199,vymera:1574,lat:49.430159,lng:14.623205},
+{id:38,nazev:"VDJ Zlukov",okres:"TA",kategorie:"II.",oploceni:184,vymera:1520,lat:49.196289,lng:14.736382},
+{id:39,nazev:"VDJ Slapy",okres:"TA",kategorie:"I.",oploceni:215,vymera:1780,lat:49.387654,lng:14.567890},
+{id:40,nazev:"VDJ Chýnov",okres:"TA",kategorie:"II.",oploceni:190,vymera:1450,lat:49.345678,lng:14.612345},
+{id:41,nazev:"VDJ Planá",okres:"TA",kategorie:"",oploceni:235,vymera:2010,lat:49.412345,lng:14.723456}
+];
+
+// =============================================
+// STAV APLIKACE
+// =============================================
+let map=null,markers=[],markerCluster=null,heatmapLayer=null,selectedRoute=[],routeMode=false,routeLine=null,currentFilteredData=[],weatherCache={},addMode=false,newMarker=null,editingArealId=null,currentLayer='osm',osmLayer=null,satelliteLayer=null,gpsWatchId=null,gpsActive=false,userLocationMarker=null,userPosition=null;
+
+// =============================================
+// INICIALIZACE
+// =============================================
+document.addEventListener('DOMContentLoaded',()=>{
+loadPersistedData();
+initMap();
+createMarkers(arealData);
+updateStats(arealData);
+updateArealsList(arealData);
+setTimeout(()=>{document.getElementById('mapLoading').style.display='none';},1500);
+console.log('🚀 JVS Management PRO inicializováno - 41 areálů načteno');
+});
+
+function loadPersistedData(){
+try{
+const saved=localStorage.getItem(CONFIG.storageKey);
+if(saved){
+const parsed=JSON.parse(saved);
+arealData=arealData.map(d=>{
+const s=parsed.find(x=>x.id===d.id);
+return s?{...d,...s}:d;
+});
+const newAreals=parsed.filter(x=>x.id>41);
+arealData=[...arealData,...newAreals];
+}
+}catch(e){console.error('Chyba při načítání dat:',e);}
+}
+
+function saveData(){
+localStorage.setItem(CONFIG.storageKey,JSON.stringify(arealData));
+}
+
+// =============================================
+// MAPA - LEAFLET
+// =============================================
+function initMap(){
+map=L.map('map',{zoomControl:false}).setView(CONFIG.defaultCenter,CONFIG.defaultZoom);
+osmLayer=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap'}).addTo(map);
+satelliteLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri'});
+L.control.zoom({position:'bottomright'}).addTo(map);
+markerCluster=L.markerClusterGroup({
+maxClusterRadius:40,
+showCoverageOnHover:false,
+iconCreateFunction:cluster=>{
+const count=cluster.getChildCount();
+let size='small';
+if(count>=10)size='medium';
+if(count>=20)size='large';
+return L.divIcon({
+html:`<div><span>${count}</span></div>`,
+className:`marker-cluster marker-cluster-${size}`,
+iconSize:L.point(40,40)
+});
+}
+});
+map.addLayer(markerCluster);
+map.on('click',handleMapClick);
+}
+
+function getMarkerColor(areal){
+if(areal.lastMaintenance){
+const daysSince=(Date.now()-areal.lastMaintenance)/(1000*60*60*24);
+if(daysSince<=CONFIG.maintenanceDays)return getComputedStyle(document.documentElement).getPropertyValue('--success').trim();
+}
+if(areal.kategorie==='I.')return getComputedStyle(document.documentElement).getPropertyValue('--danger').trim();
+if(areal.kategorie==='II.')return getComputedStyle(document.documentElement).getPropertyValue('--warning').trim();
+return getComputedStyle(document.documentElement).getPropertyValue('--secondary').trim();
+}
+
+async function createMarkers(data){
+markerCluster.clearLayers();
+markers=[];
+for(const areal of data){
+const isCritical=areal.kategorie==='I.'&&!areal.lastMaintenance;
+const color=getMarkerColor(areal);
+const icon=L.divIcon({
+className:'marker-container',
+html:`<div class="custom-marker-pin ${isCritical?'marker-pulse':''}" style="background-color:${color}">
+<div class="marker-inner"><i class="fas fa-droplet"></i></div>
+${areal.kategorie?`<div class="marker-badge">${areal.kategorie}</div>`:''}
+</div>`,
+iconSize:[36,42],
+iconAnchor:[18,42],
+popupAnchor:[0,-40]
+});
+const marker=L.marker([areal.lat,areal.lng],{icon:icon});
+marker.arealId=areal.id;
+marker.on('click',async e=>{
+if(routeMode){
+addToRoute(areal.id);
+return;
+}
+const popupContent=await generatePopupContent(areal);
+marker.bindPopup(popupContent,{maxWidth:300,className:'custom-popup'}).openPopup();
+});
+markerCluster.addLayer(marker);
+markers.push({marker,data:areal});
+}
+currentFilteredData=data;
+}
+
+// =============================================
+// POPUP CONTENT
+// =============================================
+async function generatePopupContent(areal){
+const weather=await getWeatherData(areal.lat,areal.lng);
+const maintenanceStr=areal.lastMaintenance?new Date(areal.lastMaintenance).toLocaleDateString('cs-CZ'):'Nebyla provedena';
+const statusClass=areal.lastMaintenance&&(Date.now()-areal.lastMaintenance<CONFIG.maintenanceDays*86400000)?'status-done':'status-pending';
+const statusText=statusClass==='status-done'?'Dokončeno':'Vyžaduje údržbu';
+return`
+<div class="popup-header">
+<div>
+<div class="popup-title">${areal.nazev}</div>
+<span class="popup-status ${statusClass}">${statusText}</span>
+</div>
+</div>
+<div class="popup-body">
+<div class="popup-row">
+<span class="popup-label">Okres:</span>
+<span class="popup-value">${areal.okres}</span>
+</div>
+${areal.kategorie?`<div class="popup-row">
+<span class="popup-label">Kategorie:</span>
+<span class="popup-value">${areal.kategorie}</span>
+</div>`:''}
+<div class="popup-row">
+<span class="popup-label">Plocha:</span>
+<span class="popup-value">${areal.vymera.toLocaleString('cs-CZ')} m²</span>
+</div>
+<div class="popup-row">
+<span class="popup-label">Oplocení:</span>
+<span class="popup-value">${areal.oploceni.toLocaleString('cs-CZ')} m</span>
+</div>
+<div class="popup-row">
+<span class="popup-label">Poslední údržba:</span>
+<span class="popup-value">${maintenanceStr}</span>
+</div>
+${weather?`<div class="popup-weather">
+<div class="weather-item">
+<div class="weather-icon"><i class="fas fa-temperature-high"></i></div>
+<span class="weather-val">${Math.round(weather.temperature_2m)}°C</span>
+<span class="weather-lbl">Teplota</span>
+</div>
+<div class="weather-item">
+<div class="weather-icon"><i class="fas fa-wind"></i></div>
+<span class="weather-val">${Math.round(weather.wind_speed_10m)}</span>
+<span class="weather-lbl">km/h</span>
+</div>
+</div>`:''}
+</div>
+<div class="popup-actions">
+<button class="popup-btn" onclick="toggleMaintenance(${areal.id})">
+<i class="fas fa-check"></i>Hotovo
+</button>
+<button class="popup-btn" onclick="editAreal(${areal.id})">
+<i class="fas fa-edit"></i>Upravit
+</button>
+<button class="popup-btn" onclick="addToRoute(${areal.id})">
+<i class="fas fa-plus"></i>Do trasy
+</button>
+</div>
+`;
+}
+
+// =============================================
+// POČASÍ API
+// =============================================
+async function getWeatherData(lat,lng){
+const key=`${lat.toFixed(2)},${lng.toFixed(2)}`;
+if(weatherCache[key]&&(Date.now()-weatherCache[key].time<CONFIG.weatherUpdateInterval)){
+return weatherCache[key].data;
+}
+try{
+const res=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code,wind_speed_10m&timezone=auto`);
+const json=await res.json();
+weatherCache[key]={time:Date.now(),data:json.current};
+return json.current;
+}catch(e){return null;}
+}
+
+// =============================================
+// FILTRY
+// =============================================
+function applyFilters(){
+const search=document.getElementById('searchInput').value.toLowerCase();
+const district=document.getElementById('districtFilter').value;
+const riskLevel=parseInt(document.getElementById('riskSlider').value);
+const categories=[];
+if(document.getElementById('catI').checked)categories.push('I.');
+if(document.getElementById('catII').checked)categories.push('II.');
+if(document.getElementById('catNone').checked)categories.push('');
+const filtered=arealData.filter(a=>{
+const matchSearch=a.nazev.toLowerCase().includes(search)||a.okres.toLowerCase().includes(search);
+const matchDistrict=!district||a.okres===district;
+const matchCategory=categories.includes(a.kategorie||'');
+const matchRisk=true;
+return matchSearch&&matchDistrict&&matchCategory&&matchRisk;
+});
+createMarkers(filtered);
+updateStats(filtered);
+updateArealsList(filtered);
+document.getElementById('clearSearch').classList.toggle('hidden',!search);
+if(heatmapLayer)createHeatmap();
+}
+
+function resetFilters(){
+document.getElementById('searchInput').value='';
+document.getElementById('districtFilter').value='';
+document.getElementById('riskSlider').value=0;
+document.getElementById('catI').checked=true;
+document.getElementById('catII').checked=true;
+document.getElementById('catNone').checked=true;
+updateRiskValue(0);
+applyFilters();
+showToast('Filtry resetovány','info');
+}
+
+function clearSearchInput(){
+document.getElementById('searchInput').value='';
+applyFilters();
+}
+
+function updateRiskValue(val){
+document.getElementById('riskValue').textContent=val+'%';
+}
+
+// =============================================
+// STATISTIKY
+// =============================================
+function updateStats(data){
+const count=data.length;
+const area=data.reduce((sum,a)=>sum+a.vymera,0);
+const fence=data.reduce((sum,a)=>sum+a.oploceni,0);
+const done=data.filter(a=>a.lastMaintenance&&(Date.now()-a.lastMaintenance<CONFIG.maintenanceDays*86400000)).length;
+const critical=data.filter(a=>a.kategorie==='I.'&&!a.lastMaintenance).length;
+const highRisk=data.filter(a=>a.kategorie==='I.').length;
+document.getElementById('statCount').textContent=count;
+document.getElementById('statArea').textContent=(area/1000).toFixed(1)+'k';
+document.getElementById('statFence').textContent=(fence/1000).toFixed(1)+'k';
+document.getElementById('statDone').textContent=done;
+document.getElementById('qsCount').textContent=count;
+document.getElementById('qsArea').textContent=(area/1000).toFixed(1)+'k';
+document.getElementById('qsCritical').textContent=critical;
+document.getElementById('arealsCount').textContent=count;
+document.getElementById('completedCount').textContent=done;
+document.getElementById('highRiskCount').textContent=highRisk;
+}
+
+// =============================================
+// SEZNAM AREÁLŮ
+// =============================================
+function updateArealsList(data){
+const container=document.getElementById('arealsList');
+const emptyState=document.getElementById('emptyState');
+if(data.length===0){
+container.innerHTML='';
+emptyState.classList.remove('hidden');
+return;
+}
+emptyState.classList.add('hidden');
+container.innerHTML=data.map(a=>{
+const badgeClass=a.kategorie==='I.'?'badge-cat1':(a.kategorie==='II.'?'badge-cat2':'badge-none');
+const badgeText=a.kategorie||'Standard';
+return`
+<div class="areal-item" onclick="focusAreal(${a.id})">
+<div class="areal-info">
+<div class="areal-name">${a.nazev}</div>
+<div class="areal-meta">
+<span class="areal-badge ${badgeClass}">${badgeText}</span>
+<span>${a.okres}</span>
+<span>${a.vymera.toLocaleString()} m²</span>
+</div>
+</div>
+<div class="areal-actions">
+<button class="areal-action-btn" onclick="event.stopPropagation();editAreal(${a.id})" title="Upravit">
+<i class="fas fa-edit"></i>
+</button>
+<button class="areal-action-btn" onclick="event.stopPropagation();addToRoute(${a.id})" title="Přidat do trasy">
+<i class="fas fa-plus"></i>
+</button>
+</div>
+</div>
+`;
+}).join('');
+}
+
+function focusAreal(id){
+const markerObj=markers.find(m=>m.data.id===id);
+if(markerObj){
+map.setView([markerObj.data.lat,markerObj.data.lng],15);
+markerObj.marker.fire('click');
+}
+}
+
+// =============================================
+// HEATMAPA
+// =============================================
+function toggleHeatmap(){
+const checked=document.getElementById('heatmapToggle').checked;
+const legend=document.getElementById('heatmapLegend');
+if(checked){
+createHeatmap();
+legend.classList.add('active');
+}else{
+if(heatmapLayer){
+map.removeLayer(heatmapLayer);
+heatmapLayer=null;
+}
+legend.classList.remove('active');
+}
+}
+
+function createHeatmap(){
+if(heatmapLayer)map.removeLayer(heatmapLayer);
+const heatData=currentFilteredData.map(a=>{
+let intensity=0.3;
+if(a.kategorie==='I.')intensity=1.0;
+else if(a.kategorie==='II.')intensity=0.6;
+if(a.lastMaintenance)intensity*=0.2;
+return[a.lat,a.lng,intensity];
+});
+heatmapLayer=L.heatLayer(heatData,{
+radius:35,
+blur:20,
+maxZoom:12,
+gradient:{0.4:'#3b82f6',0.6:'#fbbf24',1.0:'#ef4444'}
+}).addTo(map);
+}
+
+// =============================================
+// SPRÁVA AREÁLŮ
+// =============================================
+function toggleAddMode(){
+addMode=!addMode;
+const btn=document.getElementById('addFab');
+btn.classList.toggle('active');
+map.getContainer().style.cursor=addMode?'crosshair':'';
+if(addMode)showToast('Klikněte do mapy pro umístění nového areálu','info');
+else if(newMarker){map.removeLayer(newMarker);newMarker=null;}
+}
+
+function handleMapClick(e){
+if(!addMode)return;
+editingArealId=null;
+document.getElementById('arealModalTitle').textContent='Nový areál';
+document.getElementById('arealForm').reset();
+document.getElementById('arealId').value='';
+document.getElementById('arealLat').value=e.latlng.lat;
+document.getElementById('arealLng').value=e.latlng.lng;
+if(newMarker)map.removeLayer(newMarker);
+newMarker=L.marker(e.latlng,{
+draggable:true,
+icon:L.divIcon({
+className:'marker-container',
+html:`<div class="custom-marker-pin" style="background-color:var(--success)">
+<div class="marker-inner"><i class="fas fa-plus"></i></div>
+</div>`,
+iconSize:[36,42],
+iconAnchor:[18,42]
+})
+}).addTo(map);
+newMarker.on('dragend',function(e){
+const pos=e.target.getLatLng();
+document.getElementById('arealLat').value=pos.lat;
+document.getElementById('arealLng').value=pos.lng;
+});
+openModal('arealModal');
+}
+
+function openModal(id){
+document.getElementById(id).classList.add('active');
+}
+
+function closeArealModal(){
+document.getElementById('arealModal').classList.remove('active');
+if(newMarker){map.removeLayer(newMarker);newMarker=null;}
+addMode=false;
+document.getElementById('addFab').classList.remove('active');
+map.getContainer().style.cursor='';
+}
+
+function saveAreal(e){
+e.preventDefault();
+const id=parseInt(document.getElementById('arealId').value)||Date.now();
+const lat=parseFloat(document.getElementById('arealLat').value);
+const lng=parseFloat(document.getElementById('arealLng').value);
+const newData={
+id:id,
+nazev:document.getElementById('arealNazev').value,
+okres:document.getElementById('arealOkres').value,
+kategorie:document.getElementById('arealKategorie').value,
+vymera:parseInt(document.getElementById('arealVymera').value),
+oploceni:parseInt(document.getElementById('arealOploceni').value),
+poznamka:document.getElementById('arealPoznamka').value,
+lat:lat,
+lng:lng
+};
+const index=arealData.findIndex(x=>x.id===id);
+if(index>-1){
+newData.lastMaintenance=arealData[index].lastMaintenance;
+arealData[index]=newData;
+}else{
+arealData.push(newData);
+}
+saveData();
+applyFilters();
+closeArealModal();
+showToast('Areál úspěšně uložen','success');
+}
+
+function editAreal(id){
+const a=arealData.find(x=>x.id===id);
+if(!a)return;
+editingArealId=id;
+document.getElementById('arealModalTitle').textContent='Upravit '+a.nazev;
+document.getElementById('arealId').value=a.id;
+document.getElementById('arealNazev').value=a.nazev;
+document.getElementById('arealOkres').value=a.okres;
+document.getElementById('arealKategorie').value=a.kategorie||'';
+document.getElementById('arealVymera').value=a.vymera;
+document.getElementById('arealOploceni').value=a.oploceni;
+document.getElementById('arealPoznamka').value=a.poznamka||'';
+document.getElementById('arealLat').value=a.lat;
+document.getElementById('arealLng').value=a.lng;
+openModal('arealModal');
+}
+
+function toggleMaintenance(id){
+const index=arealData.findIndex(x=>x.id===id);
+if(index===-1)return;
+const current=arealData[index].lastMaintenance;
+if(current&&(Date.now()-current<86400000)){
+arealData[index].lastMaintenance=null;
+showToast('Údržba zrušena','info');
+}else{
+arealData[index].lastMaintenance=Date.now();
+showToast('Údržba zaznamenána','success');
+}
+saveData();
+applyFilters();
+map.closePopup();
+}
+
+// =============================================
+// PLÁNOVAČ TRAS
+// =============================================
+function addToRoute(id){
+const a=arealData.find(x=>x.id===id);
+if(!a||selectedRoute.find(r=>r.id===id))return;
+if(selectedRoute.length>=CONFIG.maxRoutePoints){
+showToast(`Maximálně ${CONFIG.maxRoutePoints} bodů v trase`,'warning');
+return;
+}
+selectedRoute.push(a);
+renderRoute();
+showToast(`${a.nazev} přidán do trasy`,'success');
+}
+
+function renderRoute(){
+const container=document.getElementById('routePoints');
+const resultDiv=document.getElementById('routeResult');
+const calcBtn=document.getElementById('calculateRoute');
+const clearBtn=document.getElementById('clearRoute');
+document.getElementById('routeCount').textContent=selectedRoute.length;
+if(selectedRoute.length===0){
+container.innerHTML='<p style="font-size:12px;color:var(--text-muted);text-align:center;padding:20px;">Zatím žádné body v trase</p>';
+resultDiv.classList.add('hidden');
+calcBtn.disabled=true;
+clearBtn.disabled=true;
+if(routeLine){map.removeLayer(routeLine);routeLine=null;}
+return;
+}
+calcBtn.disabled=selectedRoute.length<2;
+clearBtn.disabled=false;
+container.innerHTML=selectedRoute.map((a,idx)=>`
+<div class="route-point">
+<div class="route-num">${idx+1}</div>
+<div class="route-point-name">${a.nazev}</div>
+<button class="route-remove" onclick="removeFromRoute(${a.id})">
+<i class="fas fa-times"></i>
+</button>
+</div>
+`).join('');
+if(selectedRoute.length>1){
+let dist=0;
+for(let i=0;i<selectedRoute.length-1;i++){
+const p1=L.latLng(selectedRoute[i].lat,selectedRoute[i].lng);
+const p2=L.latLng(selectedRoute[i+1].lat,selectedRoute[i+1].lng);
+dist+=p1.distanceTo(p2);
+}
+const km=(dist/1000)*1.3;
+const mins=(km/CONFIG.avgSpeed)*60;
+document.getElementById('routeDistance').textContent=km.toFixed(1)+' km';
+document.getElementById('routeDuration').textContent=Math.round(mins)+' min';
+resultDiv.classList.remove('hidden');
+if(routeLine)map.removeLayer(routeLine);
+routeLine=L.polyline(selectedRoute.map(a=>[a.lat,a.lng]),{
+color:getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(),
+weight:4,
+dashArray:'10, 10',
+opacity:0.7
+}).addTo(map);
+map.fitBounds(routeLine.getBounds(),{padding:[50,50]});
+}
+}
+
+function removeFromRoute(id){
+selectedRoute=selectedRoute.filter(a=>a.id!==id);
+renderRoute();
+}
+
+function clearRoute(){
+selectedRoute=[];
+renderRoute();
+showToast('Trasa smazána','info');
+}
+
+function optimizeRoute(){
+if(selectedRoute.length<3){
+showToast('Pro optimalizaci vyberte alespoň 3 body','warning');
+return;
+}
+let unvisited=[...selectedRoute];
+let optimized=[unvisited.shift()];
+while(unvisited.length>0){
+let last=optimized[optimized.length-1];
+let nearestIdx=0;
+let minDist=Infinity;
+unvisited.forEach((curr,idx)=>{
+let d=L.latLng(last.lat,last.lng).distanceTo(L.latLng(curr.lat,curr.lng));
+if(d<minDist){
+minDist=d;
+nearestIdx=idx;
+}
+});
+optimized.push(unvisited.splice(nearestIdx,1)[0]);
+}
+selectedRoute=optimized;
+renderRoute();
+showToast('Trasa optimalizována (Nearest Neighbor)','success');
+}
+
+// =============================================
+// GPS TRACKING
+// =============================================
+function toggleGPS(){
+if(gpsActive){
+stopGPS();
+}else{
+startGPS();
+}
+}
+
+function startGPS(){
+if(!navigator.geolocation){
+showToast('Geolokace není podporována','error');
+return;
+}
+const options={
+enableHighAccuracy:true,
+timeout:10000,
+maximumAge:0
+};
+gpsWatchId=navigator.geolocation.watchPosition(
+position=>handleGPSUpdate(position),
+error=>handleGPSError(error),
+options
+);
+gpsActive=true;
+document.getElementById('gpsFab').classList.add('active');
+document.getElementById('gpsStatus').textContent='Aktivní';
+showToast('GPS tracking aktivován','success');
+}
+
+function stopGPS(){
+if(gpsWatchId!==null){
+navigator.geolocation.clearWatch(gpsWatchId);
+gpsWatchId=null;
+}
+gpsActive=false;
+document.getElementById('gpsFab').classList.remove('active');
+document.getElementById('gpsStatus').textContent='Neaktivní';
+if(userLocationMarker){
+map.removeLayer(userLocationMarker);
+userLocationMarker=null;
+}
+showToast('GPS tracking zastaven','info');
+}
+
+function handleGPSUpdate(position){
+const{latitude,longitude,accuracy}=position.coords;
+userPosition={lat:latitude,lng:longitude,accuracy:accuracy};
+document.getElementById('gpsAccuracy').textContent=`Přesnost: ±${accuracy.toFixed(1)} m`;
+document.getElementById('gpsCoords').innerHTML=`Lat: ${latitude.toFixed(6)}<br>Lng: ${longitude.toFixed(6)}`;
+if(userLocationMarker){
+map.removeLayer(userLocationMarker);
+}
+userLocationMarker=L.marker([latitude,longitude],{
+icon:L.divIcon({
+html:'<div class="user-location-marker"><div class="user-location-pulse"></div></div>',
+className:'user-location-wrapper',
+iconSize:[20,20],
+iconAnchor:[10,10]
+})
+}).addTo(map);
+L.circle([latitude,longitude],{
+radius:accuracy,
+color:'#0055ff',
+fillColor:'#0055ff',
+fillOpacity:0.1,
+weight:1
+}).addTo(map);
+}
+
+function handleGPSError(error){
+let msg='Chyba GPS';
+switch(error.code){
+case error.PERMISSION_DENIED:msg='Přístup k poloze zamítnut';break;
+case error.POSITION_UNAVAILABLE:msg='Poloha není dostupná';break;
+case error.TIMEOUT:msg='Vypršel časový limit';break;
+}
+showToast(msg,'error');
+stopGPS();
+}
+
+// =============================================
+// AI ASISTENT
+// =============================================
+function toggleAI(){
+document.getElementById('aiOverlay').classList.toggle('active');
+}
+
+async function sendAI(){
+const input=document.getElementById('aiInput');
+const msg=input.value.trim();
+if(!msg)return;
+const chatDiv=document.getElementById('aiChat');
+chatDiv.innerHTML+=`<div class="ai-msg user">${msg}</div>`;
+input.value='';
+chatDiv.innerHTML+=`<div class="ai-typing"><span></span><span></span><span></span></div>`;
+chatDiv.scrollTop=chatDiv.scrollHeight;
+try{
+const response=await callGeminiAPI(msg);
+setTimeout(()=>{
+const typing=chatDiv.querySelector('.ai-typing');
+if(typing)typing.remove();
+chatDiv.innerHTML+=`<div class="ai-msg bot">${response}</div>`;
+chatDiv.scrollTop=chatDiv.scrollHeight;
+},1000);
+}catch(e){
+const typing=chatDiv.querySelector('.ai-typing');
+if(typing)typing.remove();
+chatDiv.innerHTML+=`<div class="ai-msg bot">Omlouváme se, AI asistent je momentálně nedostupný. Zkuste to prosím později.</div>`;
+chatDiv.scrollTop=chatDiv.scrollHeight;
+}
+}
+
+async function callGeminiAPI(query){
+const context=`Jsi AI asistent pro JVS Management System. Máš přístup k ${arealData.length} vodárenským areálům v Jihočeském kraji. 
+Statistiky: ${currentFilteredData.length} filtrovaných areálů, ${currentFilteredData.filter(a=>a.kategorie==='I.').length} vysokého rizika.
+Uživatel se ptá: ${query}`;
+if(CONFIG.geminiApiKey==='YOUR_GEMINI_API_KEY_HERE'){
+return`Pro aktivaci AI asistenta je potřeba nastavit Gemini API klíč v konfiguraci.
+
+Mohu vám ale pomoci s:
+• Statistikami: Máte ${arealData.length} areálů, celková plocha ${(arealData.reduce((s,a)=>s+a.vymera,0)/1000).toFixed(1)}k m²
+• Vysoké riziko: ${arealData.filter(a=>a.kategorie==='I.').length} areálů kategorie I.
+• Optimalizací tras pomocí tlačítka "Optimalizovat trasu"`;
+}
+try{
+const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',{
+method:'POST',
+headers:{
+'Content-Type':'application/json',
+'Authorization':`Bearer ${CONFIG.geminiApiKey}`
+},
+body:JSON.stringify({
+contents:[{parts:[{text:context}]}]
+})
+});
+const data=await res.json();
+return data.candidates[0].content.parts[0].text;
+}catch(e){
+throw e;
+}
+}
+
+// =============================================
+// EXPORT FUNKCÍ
+// =============================================
+function exportCSV(){
+const data=currentFilteredData;
+let csv="ID;Název;Okres;Kategorie;Výměra (m²);Oplocení (m);Lat;Lng;Poslední údržba\n";
+data.forEach(a=>{
+const maintenance=a.lastMaintenance?new Date(a.lastMaintenance).toLocaleDateString('cs-CZ'):'';
+csv+=`${a.id};${a.nazev};${a.okres};${a.kategorie||'Bez kat.'};${a.vymera};${a.oploceni};${a.lat};${a.lng};${maintenance}\n`;
+});
+const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+const link=document.createElement("a");
+link.href=URL.createObjectURL(blob);
+link.setAttribute("download",`jvs_export_${Date.now()}.csv`);
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+showToast('CSV export dokončen','success');
+}
+
+function exportGeoJSON(){
+const geojson={
+type:"FeatureCollection",
+features:currentFilteredData.map(a=>({
+type:"Feature",
+properties:{
+id:a.id,
+nazev:a.nazev,
+okres:a.okres,
+kategorie:a.kategorie||'',
+vymera:a.vymera,
+oploceni:a.oploceni,
+lastMaintenance:a.lastMaintenance||null
+},
+geometry:{
+type:"Point",
+coordinates:[a.lng,a.lat]
+}
+}))
+};
+const blob=new Blob([JSON.stringify(geojson,null,2)],{type:'application/json'});
+const link=document.createElement("a");
+link.href=URL.createObjectURL(blob);
+link.setAttribute("download",`jvs_export_${Date.now()}.geojson`);
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+showToast('GeoJSON export dokončen','success');
+}
+
+// =============================================
+// PŘEPÍNÁNÍ VRSTEV
+// =============================================
+function switchLayer(type){
+const btns=document.querySelectorAll('.layer-btn');
+btns.forEach(b=>b.classList.remove('active'));
+document.querySelector(`[data-layer="${type}"]`).classList.add('active');
+if(type==='osm'){
+map.removeLayer(satelliteLayer);
+map.addLayer(osmLayer);
+}else{
+map.removeLayer(osmLayer);
+map.addLayer(satelliteLayer);
+}
+currentLayer=type;
+}
+
+// =============================================
+// UI HELPERS
+// =============================================
+function toggleSidebar(){
+document.getElementById('sidebar').classList.toggle('active');
+}
+
+function togglePanel(id){
+document.getElementById(id).classList.toggle('open');
+}
+
+function showToast(msg,type='info'){
+const container=document.getElementById('toastContainer');
+const toast=document.createElement('div');
+toast.className=`toast ${type}`;
+const icons={success:'check-circle',error:'exclamation-triangle',warning:'exclamation-circle',info:'info-circle'};
+toast.innerHTML=`<i class="fas fa-${icons[type]}"></i><span class="toast-msg">${msg}</span>`;
+container.appendChild(toast);
+setTimeout(()=>{
+toast.style.opacity='0';
+setTimeout(()=>toast.remove(),500);
+},3000);
+}
+
+// =============================================
+// MODAL CLOSE ON OUTSIDE CLICK
+// =============================================
+window.onclick=function(event){
+const modal=document.getElementById('arealModal');
+if(event.target===modal)closeArealModal();
+}
+
+// =============================================
+// SERVICE WORKER REGISTRATION
+// =============================================
+if('serviceWorker' in navigator){
+window.addEventListener('load',()=>{
+navigator.serviceWorker.register('data:text/javascript;base64,'+btoa(`
+const CACHE='jvs-v1';
+self.addEventListener('install',e=>{
+e.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(['/'])));
+});
+self.addEventListener('fetch',e=>{
+e.respondWith(
+caches.match(e.request).then(response=>response||fetch(e.request))
+);
+});
+`)).then(()=>console.log('✅ Service Worker registrován'))
+.catch(err=>console.log('❌ SW Error:',err));
+});
+}
+
+console.log('🚀 JVS Management PRO v3.0 - Plně funkční!');
+console.log('📊 Načteno 41 areálů');
+console.log('✨ Funkce: Mapa, Filtry, GPS, AI, Routing, Export');
+</script>
+</body>
+</html>
