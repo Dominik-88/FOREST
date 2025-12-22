@@ -332,7 +332,7 @@ Tento projekt je licencován pod MIT License - viz [LICENSE](LICENSE) soubor.
 
 ## 📞 Kontakt
 
-- **Email:** d.schmied@lantaron.cz
+- **Email:** dominikschmied4@gmail.com
 - **GitHub:** [@Dominik-88](https://github.com/Dominik-88)
 - **Issues:** [GitHub Issues](https://github.com/Dominik-88/FOREST/issues)
 
