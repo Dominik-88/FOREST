@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Areals Collection - Public read, authenticated write
+    match /areals/{arealId} {
+      // Anyone can read areals (public data)
+      allow read: if true;
+      
+      // Only authenticated users can create/update/delete
+      allow create, update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+    
+    // Users Collection - Private user data
+    match /users/{userId} {
+      // Users can only read/write their own data
+      allow read, write: if isOwner(userId);
+      
+      // User preferences subcollection
+      match /preferences/{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // User favorites subcollection
+      match /favorites/{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+    
+    // Routes Collection - User-specific routes
+    match /routes/{routeId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && 
+                               resource.data.userId == request.auth.uid;
+    }
+    
+    // Maintenance Logs - Public read, authenticated write
+    match /maintenance_logs/{logId} {
+      allow read: if true;
+      allow create, update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+    
+    // AI Query History - User-specific
+    match /ai_query_history/{queryId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && 
+                      resource.data.userId == request.auth.uid;
+    }
+  }
+}
