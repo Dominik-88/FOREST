@@ -3,15 +3,27 @@
  * Centralized Firebase setup for JVS Management System
  */
 
-// Firebase Configuration Object
-export const firebaseConfig = {
-    apiKey: "AIzaSyDemoKey-ReplaceWithYourActualKey",
-    authDomain: "jvs-management.firebaseapp.com",
-    projectId: "jvs-management",
-    storageBucket: "jvs-management.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abcdef123456"
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDjznwuPhwYVhM8eg8HV0TZmquzq8BZTCw",
+  authDomain: "jvs-management.firebaseapp.com",
+  projectId: "jvs-management",
+  storageBucket: "jvs-management.firebasestorage.app",
+  messagingSenderId: "838496450152",
+  appId: "1:838496450152:web:0bb64f9d64e1ea0ee5addd",
+  measurementId: "G-ZR4GGRHVBQ"
 };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
 // Firestore Collections
 export const COLLECTIONS = {
