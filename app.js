@@ -780,3 +780,4 @@ window.addEventListener('beforeunload', () => {
 // Export for modules that need it
 export { app };
 export default JVSApplication;
+
