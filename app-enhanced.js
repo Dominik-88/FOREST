@@ -1,7 +1,8 @@
 /**
  * JVS Management System - Enhanced Application
  * Complete integration of all modules and services
- * Version: 3.0.0
+ * iOS-optimized version
+ * Version: 3.1.0
  */
 
 // =============================================
@@ -11,6 +12,7 @@ import { firestoreService } from './src/services/firestore.service.enhanced.js';
 import { aiService } from './src/services/ai.service.enhanced.js';
 import { FiltersModuleEnhanced } from './src/modules/filters.module.enhanced.js';
 import { BottomSheetComponent } from './src/components/bottomsheet.component.js';
+import { iosCompat } from './src/utils/ios-compatibility.js';
 
 /**
  * Enhanced JVS Application Class
@@ -41,6 +43,9 @@ class JVSApplicationEnhanced {
             
             this.showLoader('Načítání aplikace...');
             
+            // Step 0: Initialize iOS compatibility FIRST
+            await this.initializeIOSCompatibility();
+            
             // Step 1: Initialize Firestore
             await this.initializeFirestore();
             
@@ -62,10 +67,14 @@ class JVSApplicationEnhanced {
             // Step 7: Load Data
             await this.loadData();
             
+            // Step 8: Show iOS install prompt if needed
+            this.showIOSInstallPromptIfNeeded();
+            
             this.isInitialized = true;
             this.hideLoader();
             
             console.log('[JVSApp Enhanced] Application initialized successfully');
+            console.log('[iOS] Device info:', iosCompat.getDeviceInfo());
             
             this.showWelcomeMessage();
             
@@ -73,6 +82,15 @@ class JVSApplicationEnhanced {
             console.error('[JVSApp Enhanced] Initialization failed:', error);
             this.showError('Nepodařilo se inicializovat aplikaci: ' + error.message);
         }
+    }
+
+    /**
+     * Initialize iOS compatibility layer
+     */
+    async initializeIOSCompatibility() {
+        console.log('[JVSApp] Initializing iOS compatibility...');
+        await iosCompat.initialize();
+        iosCompat.incrementVisitCount();
     }
 
     /**
@@ -102,7 +120,12 @@ class JVSApplicationEnhanced {
             center: [49.2, 14.4], // South Bohemia center
             zoom: 9,
             zoomControl: true,
-            attributionControl: true
+            attributionControl: true,
+            // iOS-specific optimizations
+            tap: true,
+            tapTolerance: 15,
+            touchZoom: true,
+            doubleClickZoom: false
         });
         
         // Add tile layer
@@ -116,10 +139,16 @@ class JVSApplicationEnhanced {
             maxClusterRadius: 50,
             spiderfyOnMaxZoom: true,
             showCoverageOnHover: false,
-            zoomToBoundsOnClick: true
+            zoomToBoundsOnClick: true,
+            // iOS optimizations
+            animate: true,
+            animateAddingMarkers: false
         });
         
         this.map.addLayer(this.markerClusterGroup);
+        
+        // Apply iOS-specific map optimizations
+        iosCompat.optimizeLeafletForIOS(this.map);
         
         console.log('[JVSApp] Map initialized');
     }
@@ -308,9 +337,10 @@ class JVSApplicationEnhanced {
                     </span>
                 </div>
                 <button onclick="window.app.showArealDetails('${areal.id}')" 
-                        style="width: 100%; padding: 8px; margin-top: 8px; 
+                        style="width: 100%; padding: 12px; margin-top: 8px; 
                                background: #007bff; color: white; border: none; 
-                               border-radius: 4px; cursor: pointer;">
+                               border-radius: 8px; cursor: pointer; font-size: 16px;
+                               min-height: 44px;">
                     Zobrazit detail
                 </button>
             </div>
@@ -579,6 +609,17 @@ class JVSApplicationEnhanced {
     }
 
     /**
+     * Show iOS install prompt if needed
+     */
+    showIOSInstallPromptIfNeeded() {
+        if (iosCompat.shouldShowInstallPrompt()) {
+            setTimeout(() => {
+                iosCompat.showInstallPrompt();
+            }, 3000); // Show after 3 seconds
+        }
+    }
+
+    /**
      * Show loader
      */
     showLoader(message) {
@@ -610,15 +651,20 @@ class JVSApplicationEnhanced {
         toast.textContent = message;
         toast.style.cssText = `
             position: fixed;
-            bottom: 20px;
+            bottom: calc(20px + var(--safe-area-inset-bottom, 0px));
             right: 20px;
-            padding: 12px 20px;
+            left: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 16px 20px;
             background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
             color: white;
-            border-radius: 8px;
+            border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 10000;
             animation: slideIn 0.3s ease;
+            font-size: 16px;
+            text-align: center;
         `;
         
         document.body.appendChild(toast);
@@ -640,7 +686,8 @@ class JVSApplicationEnhanced {
      * Show welcome message
      */
     showWelcomeMessage() {
-        this.showToast('JVS Management System připraven', 'success');
+        const deviceInfo = iosCompat.isIOS ? ' (iOS optimalizováno)' : '';
+        this.showToast('JVS Management System připraven' + deviceInfo, 'success');
     }
 }
 
