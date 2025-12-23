@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JVS Management | Premium Dashboard</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Colors */
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            
+            /* Category Colors */
+            --cat-1: #dc3545;
+            --cat-2: #fd7e14;
+            --cat-none: #007bff;
+            
+            /* Neutrals */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #94a3b8;
+            --border: #e2e8f0;
+            
+            /* Dark Mode */
+            --dark-bg-primary: #0f172a;
+            --dark-bg-secondary: #1e293b;
+            --dark-bg-tertiary: #334155;
+            --dark-text-primary: #f1f5f9;
+            --dark-text-secondary: #cbd5e1;
+            --dark-border: #334155;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            
+            /* Transitions */
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* Dark Mode */
+        body.dark-mode {
+            --bg-primary: var(--dark-bg-primary);
+            --bg-secondary: var(--dark-bg-secondary);
+            --bg-tertiary: var(--dark-bg-tertiary);
+            --text-primary: var(--dark-text-primary);
+            --text-secondary: var(--dark-text-secondary);
+            --border: var(--dark-border);
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .logo i {
+            font-size: 2rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+        }
+
+        /* Main Layout */
+        .container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            height: calc(100vh - 73px);
+            gap: 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-section {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-tertiary);
+            margin-bottom: 1rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .stat-icon {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .stat-icon.primary { background: rgba(37, 99, 235, 0.1); color: var(--primary); }
+        .stat-icon.success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .stat-icon.warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .stat-icon.danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+
+        /* Filters */
+        .filter-group {
+            margin-bottom: 1rem;
+        }
+
+        .filter-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .input {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: var(--transition);
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        select.input {
+            cursor: pointer;
+        }
+
+        /* Range Slider */
+        .range-slider {
+            margin-top: 0.5rem;
+        }
+
+        .range-values {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg-tertiary);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            border: none;
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Quick Filters */
+        .quick-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .quick-filter {
+            padding: 0.5rem 0.875rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-secondary);
+        }
+
+        .quick-filter:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .quick-filter.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Map Container */
+        .map-container {
+            position: relative;
+            height: 100%;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Map Controls */
+        .map-controls {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .map-control-btn {
+            width: 2.75rem;
+            height: 2.75rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-md);
+        }
+
+        .map-control-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .map-control-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Custom Popup */
+        .custom-popup {
+            min-width: 400px;
+            max-width: 500px;
+        }
+
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .popup-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .popup-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .category-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .category-badge.cat-1 {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--cat-1);
+        }
+
+        .category-badge.cat-2 {
+            background: rgba(253, 126, 20, 0.1);
+            color: var(--cat-2);
+        }
+
+        .category-badge.cat-none {
+            background: rgba(0, 123, 255, 0.1);
+            color: var(--cat-none);
+        }
+
+        .popup-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .info-value {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .popup-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .action-btn {
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .action-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .action-btn i {
+            font-size: 1.25rem;
+        }
+
+        .popup-status {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-checkbox {
+            width: 1.25rem;
+            height: 1.25rem;
+            cursor: pointer;
+        }
+
+        .status-text {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.25rem;
+            background: var(--bg-secondary);
+            padding: 0.25rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 0.625rem 1rem;
+            background: transparent;
+            border: none;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-secondary);
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            background: var(--bg-primary);
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 3.5rem;
+            height: 3.5rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-xl);
+            transition: var(--transition);
+            z-index: 1000;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+        }
+
+        .fab i {
+            font-size: 1.5rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: 1rem;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            width: 2rem;
+            height: 2rem;
+            border: none;
+            background: var(--bg-secondary);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        /* Charts */
+        .chart-container {
+            background: var(--bg-primary);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+
+        .chart-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-primary);
+        }
+
+        thead {
+            background: var(--bg-secondary);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-tertiary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .sidebar.mobile-open {
+                display: flex;
+                position: fixed;
+                top: 73px;
+                left: 0;
+                width: 100%;
+                height: calc(100vh - 73px);
+                z-index: 1500;
+            }
+        }
+
+        /* Custom Marker Icons */
+        .custom-marker {
+            width: 32px;
+            height: 32px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            border: 3px solid white;
+        }
+
+        .custom-marker i {
+            transform: rotate(45deg);
+            color: white;
+            font-size: 14px;
+        }
+
+        .marker-cat-1 { background: var(--cat-1); }
+        .marker-cat-2 { background: var(--cat-2); }
+        .marker-cat-none { background: var(--cat-none); }
+
+        /* Leaflet Popup Override */
+        .leaflet-popup-content-wrapper {
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow-xl);
+            padding: 0;
+        }
+
+        .leaflet-popup-content {
+            margin: 0;
+            width: 400px !important;
+        }
+
+        .leaflet-popup-tip {
+            display: none;
+        }
+
+        /* Route Planner */
+        .route-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .route-item {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: move;
+            transition: var(--transition);
+        }
+
+        .route-item:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateX(4px);
+        }
+
+        .route-number {
+            width: 2rem;
+            height: 2rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+
+        .route-info {
+            flex: 1;
+        }
+
+        .route-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .route-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .route-remove {
+            width: 2rem;
+            height: 2rem;
+            background: transparent;
+            border: none;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            border-radius: 0.375rem;
+            transition: var(--transition);
+        }
+
+        .route-remove:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-primary);
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 3000;
+            animation: toastSlideUp 0.3s ease-out;
+        }
+
+        @keyframes toastSlideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid var(--danger); }
+        .toast.warning { border-left: 4px solid var(--warning); }
+        .toast.info { border-left: 4px solid var(--info); }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-water"></i>
+            <span>JVS Management</span>
+        </div>
+        
+        <div class="header-actions">
+            <button class="btn btn-secondary btn-icon" id="toggleSidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <button class="btn btn-secondary btn-icon" id="toggleDarkMode">
+                <i class="fas fa-moon"></i>
+            </button>
+            <button class="btn btn-primary" id="exportBtn">
+                <i class="fas fa-download"></i>
+                Export
+            </button>
+            <button class="btn btn-primary" id="routePlannerBtn">
+                <i class="fas fa-route"></i>
+                Plánovat Trasu
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Statistics -->
+            <div class="sidebar-section">
+                <h3 class="section-title">Přehled</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <div class="stat-value" id="totalAreals">41</div>
+                        <div class="stat-label">Celkem areálů</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-ruler-combined"></i>
+                        </div>
+                        <div class="stat-value" id="totalArea">198k</div>
+                        <div class="stat-label">m² celkem</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-value" id="completedAreals">28</div>
+                        <div class="stat-label">Dokončeno</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-value" id="highRisk">13</div>
+                        <div class="stat-label">Vysoké riziko</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Filters -->
+            <div class="sidebar-section">
+                <h3 class="section-title">Rychlé Filtry</h3>
+                <div class="quick-filters">
+                    <div class="quick-filter" data-filter="all">Vše</div>
+                    <div class="quick-filter" data-filter="cat-1">Kategorie I.</div>
+                    <div class="quick-filter" data-filter="cat-2">Kategorie II.</div>
+                    <div class="quick-filter" data-filter="top10">Top 10</div>
+                    <div class="quick-filter" data-filter="uncompleted">Nedokončené</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="sidebar-section">
+                <h3 class="section-title">Filtry</h3>
+                
+                <!-- Search -->
+                <div class="filter-group">
+                    <label class="filter-label">Vyhledávání</label>
+                    <input type="text" class="input" id="searchInput" placeholder="Název, okres, typ...">
+                </div>
+
+                <!-- District -->
+                <div class="filter-group">
+                    <label class="filter-label">Okres</label>
+                    <select class="input" id="districtFilter">
+                        <option value="">Všechny okresy</option>
+                        <option value="CB">České Budějovice (19)</option>
+                        <option value="TA">Tábor (10)</option>
+                        <option value="CK">Český Krumlov (4)</option>
+                        <option value="PT">Prachatice (4)</option>
+                        <option value="PI">Písek (2)</option>
+                        <option value="ST">Strakonice (2)</option>
+                    </select>
+                </div>
+
+                <!-- Category -->
+                <div class="filter-group">
+                    <label class="filter-label">Kategorie</label>
+                    <select class="input" id="categoryFilter">
+                        <option value="">Všechny kategorie</option>
+                        <option value="I.">Kategorie I. (23)</option>
+                        <option value="II.">Kategorie II. (15)</option>
+                        <option value="null">Bez kategorie (3)</option>
+                    </select>
+                </div>
+
+                <!-- Type -->
+                <div class="filter-group">
+                    <label class="filter-label">Typ objektu</label>
+                    <select class="input" id="typeFilter">
+                        <option value="">Všechny typy</option>
+                        <option value="VDJ">VDJ - Vodojem (32)</option>
+                        <option value="ÚV">ÚV - Úpravna vody (3)</option>
+                        <option value="ČS">ČS - Čerpací stanice (3)</option>
+                        <option value="Vrt">Vrt (1)</option>
+                        <option value="Provozní Vodojem">Provozní Vodojem (1)</option>
+                    </select>
+                </div>
+
+                <!-- Area Range -->
+                <div class="filter-group">
+                    <label class="filter-label">Výměra plochy (m²)</label>
+                    <div class="range-slider">
+                        <div class="range-values">
+                            <span id="minAreaValue">395</span>
+                            <span id="maxAreaValue">74,777</span>
+                        </div>
+                        <input type="range" id="minAreaRange" min="395" max="74777" value="395" step="100">
+                        <input type="range" id="maxAreaRange" min="395" max="74777" value="74777" step="100">
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="filter-group">
+                    <label class="filter-label">Stav dokončení</label>
+                    <select class="input" id="statusFilter">
+                        <option value="">Všechny stavy</option>
+                        <option value="completed">Dokončeno</option>
+                        <option value="pending">Nedokončeno</option>
+                    </select>
+                </div>
+
+                <!-- Reset -->
+                <button class="btn btn-secondary" id="resetFilters" style="width: 100%; margin-top: 1rem;">
+                    <i class="fas fa-redo"></i>
+                    Resetovat Filtry
+                </button>
+            </div>
+
+            <!-- Saved Filters -->
+            <div class="sidebar-section">
+                <h3 class="section-title">Uložené Filtry</h3>
+                <div id="savedFilters">
+                    <p style="font-size: 0.875rem; color: var(--text-tertiary);">Žádné uložené filtry</p>
+                </div>
+                <button class="btn btn-secondary" id="saveFilterBtn" style="width: 100%; margin-top: 0.75rem;">
+                    <i class="fas fa-save"></i>
+                    Uložit Aktuální Filtr
+                </button>
+            </div>
+        </aside>
+
+        <!-- Map -->
+        <main class="map-container">
+            <div id="map"></div>
+            
+            <!-- Map Controls -->
+            <div class="map-controls">
+                <div class="map-control-btn" id="toggleClustering" title="Clustering">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="map-control-btn" id="toggleHeatmap" title="Heatmapa">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <div class="map-control-btn" id="measureTool" title="Měření vzdálenosti">
+                    <i class="fas fa-ruler"></i>
+                </div>
+                <div class="map-control-btn" id="fullscreenBtn" title="Celá obrazovka">
+                    <i class="fas fa-expand"></i>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="fab" id="fabMenu">
+        <i class="fas fa-plus"></i>
+    </div>
+
+    <!-- Route Planner Modal -->
+    <div class="modal" id="routePlannerModal">
+        <div class="modal-content" style="width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-route"></i>
+                    Plánovač Tras
+                </h2>
+                <button class="modal-close" onclick="closeModal('routePlannerModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="tabs">
+                    <button class="tab active" data-tab="select">1. Výběr Areálů</button>
+                    <button class="tab" data-tab="optimize">2. Optimalizace</button>
+                    <button class="tab" data-tab="export">3. Export</button>
+                </div>
+
+                <!-- Tab 1: Select -->
+                <div class="tab-content active" id="tab-select">
+                    <p style="margin-bottom: 1rem; color: var(--text-secondary);">
+                        Vyberte areály pro plánování trasy. Můžete je přeuspořádat drag & drop.
+                    </p>
+                    <div class="route-list" id="routeList">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <!-- Tab 2: Optimize -->
+                <div class="tab-content" id="tab-optimize">
+                    <div class="chart-container">
+                        <h3 class="chart-title">Optimalizovaná Trasa</h3>
+                        <canvas id="routeChart"></canvas>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="stat-card">
+                            <div class="stat-label">Celková Vzdálenost</div>
+                            <div class="stat-value" id="totalDistance">0 km</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Odhadovaný Čas</div>
+                            <div class="stat-value" id="estimatedTime">0 h</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Spotřeba Paliva</div>
+                            <div class="stat-value" id="fuelConsumption">0 L</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Počet Areálů</div>
+                            <div class="stat-value" id="arealCount">0</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="optimizeRouteBtn" style="width: 100%; margin-top: 1rem;">
+                        <i class="fas fa-magic"></i>
+                        Optimalizovat Trasu (AI)
+                    </button>
+                </div>
+
+                <!-- Tab 3: Export -->
+                <div class="tab-content" id="tab-export">
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-file-download"></i>
+                            Stáhnout GPX (pro XRot 95)
+                        </button>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-file-pdf"></i>
+                            Stáhnout PDF Report
+                        </button>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-file-csv"></i>
+                            Stáhnout CSV
+                        </button>
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-share-alt"></i>
+                            Sdílet Trasu (URL)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Modal -->
+    <div class="modal" id="analyticsModal">
+        <div class="modal-content" style="width: 1000px;">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-chart-bar"></i>
+                    Statistiky & Analytics
+                </h2>
+                <button class="modal-close" onclick="closeModal('analyticsModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div class="chart-container">
+                        <h3 class="chart-title">Plocha podle Okresu</h3>
+                        <canvas id="districtChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3 class="chart-title">Poměr Kategorií</h3>
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3 class="chart-title">Top 10 Největších Areálů</h3>
+                    <canvas id="topArealChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    
+    <!-- Data -->
+    <script type="module" src="./data/areals-complete.js"></script>
+    
+    <!-- Main App -->
+    <script type="module" src="./app-premium.js"></script>
+</body>
+</html>
