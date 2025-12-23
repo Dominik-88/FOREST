@@ -2,2131 +2,721 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JVS Management | Premium Dashboard</title>
-    
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>WaterMGMT PRO - JVS Premium</title>
 
+    <!-- ✅ FIX #1: Leaflet CSS & JS Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
+    
+    <!-- UI Resources -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
         :root {
-            /* Colors */
             --primary: #2563eb;
             --primary-dark: #1e40af;
-            --secondary: #64748b;
+            --accent: #7c3aed;
             --success: #10b981;
-            --warning: #f59e0b;
             --danger: #ef4444;
-            --info: #3b82f6;
-            
-            /* Category Colors */
-            --cat-1: #dc3545;
-            --cat-2: #fd7e14;
-            --cat-none: #007bff;
-            
-            /* Neutrals */
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8fafc;
-            --bg-tertiary: #f1f5f9;
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --text-tertiary: #94a3b8;
-            --border: #e2e8f0;
-            
-            /* Dark Mode */
-            --dark-bg-primary: #0f172a;
-            --dark-bg-secondary: #1e293b;
-            --dark-bg-tertiary: #334155;
-            --dark-text-primary: #f1f5f9;
-            --dark-text-secondary: #cbd5e1;
-            --dark-border: #334155;
-            
-            /* Shadows */
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-            
-            /* Transitions */
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --warning: #f59e0b;
+            --bg-glass: rgba(255, 255, 255, 0.95);
+            --radius: 16px;
         }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            overflow-x: hidden;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; background: #f1f5f9; }
 
-        /* Dark Mode */
-        body.dark-mode {
-            --bg-primary: var(--dark-bg-primary);
-            --bg-secondary: var(--dark-bg-secondary);
-            --bg-tertiary: var(--dark-bg-tertiary);
-            --text-primary: var(--dark-text-primary);
-            --text-secondary: var(--dark-text-secondary);
-            --border: var(--dark-border);
-        }
-
-        /* Header */
-        .header {
-            background: var(--bg-primary);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--primary);
-        }
-
-        .logo i {
-            font-size: 2rem;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .btn {
-            padding: 0.625rem 1.25rem;
-            border: none;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .btn-secondary {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
-        .btn-secondary:hover {
-            background: var(--border);
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #059669;
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-
-        .btn-icon {
-            width: 2.5rem;
-            height: 2.5rem;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 0.5rem;
-        }
-
-        /* Main Layout */
-        .container {
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            height: calc(100vh - 73px);
-            gap: 0;
-        }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 0; }
 
         /* Sidebar */
         .sidebar {
-            background: var(--bg-primary);
-            border-right: 1px solid var(--border);
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-section {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .sidebar-section:last-child {
-            border-bottom: none;
-        }
-
-        .section-title {
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-tertiary);
-            margin-bottom: 1rem;
-        }
-
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-        }
-
-        .stat-card {
-            background: var(--bg-secondary);
-            padding: 1rem;
-            border-radius: 0.75rem;
-            border: 1px solid var(--border);
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .stat-icon {
-            width: 2rem;
-            height: 2rem;
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
-        }
-
-        .stat-icon.primary { background: rgba(37, 99, 235, 0.1); color: var(--primary); }
-        .stat-icon.success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .stat-icon.warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
-        .stat-icon.danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-
-        /* Filters */
-        .filter-group {
-            margin-bottom: 1rem;
-        }
-
-        .filter-label {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        .input {
-            width: 100%;
-            padding: 0.625rem 0.875rem;
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            font-size: 0.875rem;
-            transition: var(--transition);
-        }
-
-        .input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        select.input {
-            cursor: pointer;
-        }
-
-        textarea.input {
-            min-height: 100px;
-            resize: vertical;
-            font-family: inherit;
-        }
-
-        /* Range Slider */
-        .range-slider {
-            margin-top: 0.5rem;
-        }
-
-        .range-values {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-        }
-
-        input[type="range"] {
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: var(--bg-tertiary);
-            outline: none;
-            -webkit-appearance: none;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--primary);
-            cursor: pointer;
-            box-shadow: var(--shadow-md);
-        }
-
-        input[type="range"]::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--primary);
-            cursor: pointer;
-            border: none;
-            box-shadow: var(--shadow-md);
-        }
-
-        /* Quick Filters */
-        .quick-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .quick-filter {
-            padding: 0.5rem 0.875rem;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 2rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            color: var(--text-secondary);
-        }
-
-        .quick-filter:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            transform: translateY(-1px);
-        }
-
-        .quick-filter.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        /* Map Container */
-        .map-container {
-            position: relative;
-            height: 100%;
-        }
-
-        #map {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Map Controls */
-        .map-controls {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .map-control-btn {
-            width: 2.75rem;
-            height: 2.75rem;
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-            box-shadow: var(--shadow-md);
-        }
-
-        .map-control-btn:hover {
-            background: var(--primary);
-            color: white;
-            transform: scale(1.05);
-        }
-
-        .map-control-btn.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* Custom Popup */
-        .custom-popup {
-            min-width: 450px;
-            max-width: 500px;
-        }
-
-        .popup-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .popup-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .popup-subtitle {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .category-badge {
-            padding: 0.375rem 0.75rem;
-            border-radius: 0.375rem;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .category-badge.cat-1 {
-            background: rgba(220, 53, 69, 0.1);
-            color: var(--cat-1);
-        }
-
-        .category-badge.cat-2 {
-            background: rgba(253, 126, 20, 0.1);
-            color: var(--cat-2);
-        }
-
-        .category-badge.cat-none {
-            background: rgba(0, 123, 255, 0.1);
-            color: var(--cat-none);
-        }
-
-        .popup-info {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .info-item {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .info-label {
-            font-size: 0.75rem;
-            color: var(--text-tertiary);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .info-value {
-            font-size: 1.125rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .popup-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .action-btn {
-            padding: 0.75rem;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.375rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        .action-btn:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .action-btn i {
-            font-size: 1.25rem;
-        }
-
-        .popup-status {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1rem;
-            background: var(--bg-secondary);
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .status-checkbox {
-            width: 1.25rem;
-            height: 1.25rem;
-            cursor: pointer;
-        }
-
-        .status-text {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        /* Photo Gallery */
-        .photo-gallery {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .photo-item {
-            aspect-ratio: 1;
-            border-radius: 0.5rem;
-            overflow: hidden;
-            cursor: pointer;
-            position: relative;
-            background: var(--bg-secondary);
-        }
-
-        .photo-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: var(--transition);
-        }
-
-        .photo-item:hover img {
-            transform: scale(1.1);
-        }
-
-        .photo-upload {
-            aspect-ratio: 1;
-            border: 2px dashed var(--border);
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-            color: var(--text-tertiary);
-        }
-
-        .photo-upload:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            background: rgba(37, 99, 235, 0.05);
-        }
-
-        /* Notes Section */
-        .notes-section {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .note-item {
-            background: var(--bg-secondary);
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            margin-bottom: 0.5rem;
-            border-left: 3px solid var(--primary);
-        }
-
-        .note-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .note-date {
-            font-size: 0.75rem;
-            color: var(--text-tertiary);
-        }
-
-        .note-text {
-            font-size: 0.875rem;
-            color: var(--text-primary);
-            line-height: 1.5;
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 0.25rem;
-            background: var(--bg-secondary);
-            padding: 0.25rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .tab {
-            flex: 1;
-            padding: 0.625rem 1rem;
-            background: transparent;
-            border: none;
-            border-radius: 0.375rem;
-            font-weight: 600;
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: var(--transition);
-            color: var(--text-secondary);
-        }
-
-        .tab:hover {
-            color: var(--text-primary);
-        }
-
-        .tab.active {
-            background: var(--bg-primary);
-            color: var(--primary);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Floating Action Button */
-        .fab {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 3.5rem;
-            height: 3.5rem;
-            background: var(--primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: var(--shadow-xl);
-            transition: var(--transition);
-            z-index: 1000;
-        }
-
-        .fab:hover {
-            transform: scale(1.1) rotate(90deg);
-            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-        }
-
-        .fab i {
-            font-size: 1.5rem;
-        }
-
-        /* FAB Menu */
-        .fab-menu {
-            position: fixed;
-            bottom: 6rem;
-            right: 2rem;
-            z-index: 999;
-            display: none;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .fab-menu.active {
-            display: flex;
-            animation: fabMenuSlideIn 0.3s ease-out;
-        }
-
-        @keyframes fabMenuSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fab-menu-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: var(--bg-primary);
-            padding: 0.75rem 1.25rem;
-            border-radius: 2rem;
-            box-shadow: var(--shadow-lg);
-            cursor: pointer;
-            transition: var(--transition);
-            border: 1px solid var(--border);
-        }
-
-        .fab-menu-item:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateX(-4px);
-        }
-
-        .fab-menu-item i {
-            font-size: 1.25rem;
-        }
-
-        .fab-menu-label {
-            font-weight: 600;
-            font-size: 0.875rem;
-            white-space: nowrap;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--bg-primary);
-            border-radius: 1rem;
-            max-width: 90%;
-            max-height: 90%;
-            overflow-y: auto;
-            box-shadow: var(--shadow-xl);
-            animation: modalSlideIn 0.3s ease-out;
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            background: var(--bg-primary);
-            z-index: 10;
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .modal-close {
-            width: 2rem;
-            height: 2rem;
-            border: none;
-            background: var(--bg-secondary);
-            border-radius: 0.375rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-        }
-
-        .modal-close:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-        }
-
-        .modal-footer {
-            padding: 1.5rem;
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.75rem;
-            position: sticky;
-            bottom: 0;
-            background: var(--bg-primary);
-        }
-
-        /* Form Grid */
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        .form-grid-full {
-            grid-column: 1 / -1;
-        }
-
-        /* Service Book */
-        .service-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .service-item {
-            background: var(--bg-secondary);
-            padding: 1.25rem;
-            border-radius: 0.75rem;
-            border: 1px solid var(--border);
-        }
-
-        .service-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 0.75rem;
-        }
-
-        .service-title {
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .service-date {
-            font-size: 0.75rem;
-            color: var(--text-tertiary);
-        }
-
-        .service-type {
-            padding: 0.25rem 0.625rem;
-            background: var(--primary);
-            color: white;
-            border-radius: 0.25rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .service-description {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
-            margin-bottom: 0.75rem;
-        }
-
-        .service-meta {
-            display: flex;
-            gap: 1.5rem;
-            font-size: 0.75rem;
-            color: var(--text-tertiary);
-        }
-
-        .service-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 0.375rem;
-        }
-
-        /* Machine Card */
-        .machine-card {
-            background: var(--bg-secondary);
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            border: 1px solid var(--border);
-            margin-bottom: 1rem;
-        }
-
-        .machine-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-        }
-
-        .machine-name {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .machine-model {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .machine-status {
-            padding: 0.375rem 0.75rem;
-            border-radius: 0.375rem;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-
-        .machine-status.active {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--success);
-        }
-
-        .machine-status.maintenance {
-            background: rgba(245, 158, 11, 0.1);
-            color: var(--warning);
-        }
-
-        .machine-stats {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-        }
-
-        .machine-stat {
-            text-align: center;
-        }
-
-        .machine-stat-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--text-primary);
-        }
-
-        .machine-stat-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
-        }
-
-        /* Timeline */
-        .timeline {
-            position: relative;
-            padding-left: 2rem;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 0.5rem;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: var(--border);
-        }
-
-        .timeline-item {
-            position: relative;
-            margin-bottom: 1.5rem;
-        }
-
-        .timeline-dot {
-            position: absolute;
-            left: -1.625rem;
-            top: 0.25rem;
-            width: 0.75rem;
-            height: 0.75rem;
-            border-radius: 50%;
-            background: var(--primary);
-            border: 2px solid var(--bg-primary);
-        }
-
-        .timeline-content {
-            background: var(--bg-secondary);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid var(--border);
-        }
-
-        .timeline-date {
-            font-size: 0.75rem;
-            color: var(--text-tertiary);
-            margin-bottom: 0.5rem;
-        }
-
-        .timeline-text {
-            font-size: 0.875rem;
-            color: var(--text-primary);
-        }
-
-        /* Charts */
-        .chart-container {
-            background: var(--bg-primary);
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            border: 1px solid var(--border);
-            margin-bottom: 1rem;
-        }
-
-        .chart-title {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 1rem;
-        }
-
-        /* Table */
-        .table-container {
-            overflow-x: auto;
-            border-radius: 0.75rem;
-            border: 1px solid var(--border);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: var(--bg-primary);
-        }
-
-        thead {
-            background: var(--bg-secondary);
-        }
-
-        th {
-            padding: 1rem;
-            text-align: left;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-tertiary);
-            border-bottom: 1px solid var(--border);
-        }
-
-        td {
-            padding: 1rem;
-            font-size: 0.875rem;
-            color: var(--text-primary);
-            border-bottom: 1px solid var(--border);
-        }
-
-        tr:hover {
-            background: var(--bg-secondary);
-        }
-
-        /* Route List */
-        .route-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .route-item {
-            background: var(--bg-secondary);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            cursor: move;
-            transition: var(--transition);
-        }
-
-        .route-item:hover {
-            box-shadow: var(--shadow-md);
-            transform: translateX(4px);
-        }
-
-        .route-number {
-            width: 2rem;
-            height: 2rem;
-            background: var(--primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.875rem;
-        }
-
-        .route-info {
-            flex: 1;
-        }
-
-        .route-name {
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .route-meta {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        .route-remove {
-            width: 2rem;
-            height: 2rem;
-            background: transparent;
-            border: none;
-            color: var(--text-tertiary);
-            cursor: pointer;
-            border-radius: 0.375rem;
-            transition: var(--transition);
-        }
-
-        .route-remove:hover {
-            background: var(--danger);
-            color: white;
+            position: fixed; top: 0; left: 0; bottom: 0; width: 400px; max-width: 90vw;
+            background: var(--bg-glass); backdrop-filter: blur(12px);
+            z-index: 1050; transform: translateX(-100%); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 10px 0 30px rgba(0,0,0,0.1); border-right: 1px solid rgba(0,0,0,0.05);
+        }
+        .sidebar.active { transform: translateX(0); }
+
+        /* Panels */
+        .panel-section { background: white; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+        .panel-head { 
+            padding: 14px 18px; cursor: pointer; display: flex; justify-content: space-between; 
+            align-items: center; font-weight: 600; transition: 0.2s;
+        }
+        .panel-head:hover { background: #f8fafc; }
+        .panel-body { max-height: 0; transition: 0.3s ease-out; overflow: hidden; opacity: 0; }
+        .panel-section.open .panel-body { max-height: 2000px; padding: 0 18px 18px; opacity: 1; }
+        .panel-section.open .panel-head i.fa-chevron-down { transform: rotate(180deg); }
+
+        /* FAB Buttons */
+        .btn-fab {
+            width: 56px; height: 56px; border-radius: 18px; display: flex; align-items: center;
+            justify-content: center; font-size: 22px; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            cursor: pointer; transition: 0.2s; border: none;
+        }
+        .btn-fab:active { transform: scale(0.9); }
+
+        /* Custom Markers */
+        .custom-marker {
+            width: 30px; height: 30px; border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg); border: 3px solid white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+        .marker-critical { animation: pulse-red 2s infinite; }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* Quick Info Bar */
+        .quick-info {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: white; padding: 10px 25px; border-radius: 40px;
+            display: flex; gap: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 900; border: 1px solid #e2e8f0;
         }
 
         /* Toast Notifications */
         .toast {
-            position: fixed;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--bg-primary);
-            padding: 1rem 1.5rem;
-            border-radius: 0.75rem;
-            box-shadow: var(--shadow-xl);
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            z-index: 3000;
-            animation: toastSlideUp 0.3s ease-out;
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 10000; padding: 12px 24px; border-radius: 50px;
+            background: #1e293b; color: white; display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.2); animation: slideDown 0.3s;
+        }
+        @keyframes slideDown {
+            from { transform: translate(-50%, -100px); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
         }
 
-        @keyframes toastSlideUp {
-            from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
+        /* Modal */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000;
+            display: none; align-items: center; justify-content: center; padding: 20px;
         }
-
-        .toast.success { border-left: 4px solid var(--success); }
-        .toast.error { border-left: 4px solid var(--danger); }
-        .toast.warning { border-left: 4px solid var(--warning); }
-        .toast.info { border-left: 4px solid var(--info); }
-
-        /* Loading */
-        .loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 3rem;
-            color: var(--text-secondary);
-        }
-
-        .spinner {
-            width: 2rem;
-            height: 2rem;
-            border: 3px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Custom Marker Icons */
-        .custom-marker {
-            width: 32px;
-            height: 32px;
-            border-radius: 50% 50% 50% 0;
-            transform: rotate(-45deg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow-lg);
-            border: 3px solid white;
-        }
-
-        .custom-marker i {
-            transform: rotate(45deg);
-            color: white;
-            font-size: 14px;
-        }
-
-        .marker-cat-1 { background: var(--cat-1); }
-        .marker-cat-2 { background: var(--cat-2); }
-        .marker-cat-none { background: var(--cat-none); }
-
-        /* Leaflet Popup Override */
-        .leaflet-popup-content-wrapper {
-            border-radius: 0.75rem;
-            box-shadow: var(--shadow-xl);
-            padding: 0;
-        }
-
-        .leaflet-popup-content {
-            margin: 0;
-            width: 450px !important;
-        }
-
-        .leaflet-popup-tip {
-            display: none;
-        }
+        .modal-overlay.active { display: flex; }
 
         /* Responsive */
-        @media (max-width: 1024px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-
-            .sidebar {
-                display: none;
-            }
-
-            .sidebar.mobile-open {
-                display: flex;
-                position: fixed;
-                top: 73px;
-                left: 0;
-                width: 100%;
-                height: calc(100vh - 73px);
-                z-index: 1500;
-            }
-
-            .custom-popup {
-                min-width: 300px;
-            }
-
-            .popup-actions {
-                grid-template-columns: 1fr;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* File Upload */
-        .file-upload-area {
-            border: 2px dashed var(--border);
-            border-radius: 0.75rem;
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .file-upload-area:hover {
-            border-color: var(--primary);
-            background: rgba(37, 99, 235, 0.05);
-        }
-
-        .file-upload-icon {
-            font-size: 3rem;
-            color: var(--text-tertiary);
-            margin-bottom: 1rem;
-        }
-
-        .file-upload-text {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        /* Image Preview */
-        .image-preview-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .image-preview {
-            position: relative;
-            aspect-ratio: 1;
-            border-radius: 0.5rem;
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-
-        .image-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .image-preview-remove {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            width: 1.75rem;
-            height: 1.75rem;
-            background: var(--danger);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: var(--transition);
-        }
-
-        .image-preview:hover .image-preview-remove {
-            opacity: 1;
-        }
-
-        /* GPS Picker */
-        .gps-picker {
-            height: 300px;
-            border-radius: 0.5rem;
-            overflow: hidden;
-            border: 1px solid var(--border);
-            margin-bottom: 1rem;
-        }
-
-        /* Alert Box */
-        .alert {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-        }
-
-        .alert-info {
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            color: var(--info);
-        }
-
-        .alert-warning {
-            background: rgba(245, 158, 11, 0.1);
-            border: 1px solid rgba(245, 158, 11, 0.2);
-            color: var(--warning);
-        }
-
-        .alert-success {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: var(--success);
-        }
-
-        .alert i {
-            font-size: 1.25rem;
-            margin-top: 0.125rem;
-        }
-
-        .alert-content {
-            flex: 1;
-        }
-
-        .alert-title {
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-
-        .alert-text {
-            font-size: 0.875rem;
-            opacity: 0.9;
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; border-radius: 0; }
+            .quick-info { width: 90vw; justify-content: space-around; font-size: 13px; }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="logo">
-            <i class="fas fa-water"></i>
-            <span>JVS Management</span>
+
+    <div id="map"></div>
+
+    <!-- UI Overlay -->
+    <div class="fixed inset-0 pointer-events-none z-[1100]">
+        <button class="pointer-events-auto absolute top-4 left-4 btn-fab bg-blue-600 text-white" id="toggleSidebarBtn">
+            <i class="fas fa-bars"></i>
+        </button>
+        <button class="pointer-events-auto absolute top-4 right-4 btn-fab bg-emerald-500 text-white" id="addBtn">
+            <i class="fas fa-plus"></i>
+        </button>
+
+        <div class="quick-info pointer-events-auto">
+            <div><span class="text-blue-600 font-bold" id="qsCount">0</span> <span class="text-slate-400">Areálů</span></div>
+            <div class="w-px h-6 bg-slate-200"></div>
+            <div><span class="text-slate-700 font-bold" id="qsArea">0</span> <span class="text-slate-400">m²</span></div>
+            <div class="w-px h-6 bg-slate-200"></div>
+            <div><span class="text-red-500 font-bold" id="qsCrit">0</span> <span class="text-slate-400">Rizik</span></div>
         </div>
-        
-        <div class="header-actions">
-            <button class="btn btn-secondary btn-icon" id="toggleSidebar">
-                <i class="fas fa-bars"></i>
+
+        <!-- Layer Switcher -->
+        <div class="absolute top-20 right-4 flex flex-col gap-2 pointer-events-auto">
+            <button class="w-12 h-12 bg-white rounded-xl shadow-lg flex items-center justify-center text-slate-600" id="layerOSM">
+                <i class="fas fa-map"></i>
             </button>
-            <button class="btn btn-secondary btn-icon" id="toggleDarkMode">
-                <i class="fas fa-moon"></i>
-            </button>
-            <button class="btn btn-secondary" id="serviceBookBtn">
-                <i class="fas fa-wrench"></i>
-                Servisní Knížka
-            </button>
-            <button class="btn btn-secondary" id="exportBtn">
-                <i class="fas fa-download"></i>
-                Export
-            </button>
-            <button class="btn btn-primary" id="routePlannerBtn">
-                <i class="fas fa-route"></i>
-                Plánovat Trasu
+            <button class="w-12 h-12 bg-white rounded-xl shadow-lg flex items-center justify-center text-slate-600" id="layerSAT">
+                <i class="fas fa-satellite"></i>
             </button>
         </div>
-    </header>
+    </div>
 
-    <!-- Main Container -->
-    <div class="container">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <!-- Statistics -->
-            <div class="sidebar-section">
-                <h3 class="section-title">Přehled</h3>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon primary">
-                            <i class="fas fa-map-marked-alt"></i>
-                        </div>
-                        <div class="stat-value" id="totalAreals">41</div>
-                        <div class="stat-label">Celkem areálů</div>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="p-6 bg-blue-600 text-white flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-extrabold flex items-center gap-2">
+                    <i class="fas fa-droplet"></i> WaterMGMT <span class="font-light opacity-80">PRO</span>
+                </h1>
+                <p class="text-xs opacity-70">JVS - Jihočeský vodárenský svaz</p>
+            </div>
+            <button id="closeSidebarBtn" class="text-2xl">&times;</button>
+        </div>
+
+        <div class="p-4 overflow-y-auto h-[calc(100vh-100px)]">
+            <!-- Search & Filters -->
+            <div class="panel-section open">
+                <div class="panel-head">
+                    <span><i class="fas fa-search mr-2"></i> Filtrování</span>
+                    <i class="fas fa-chevron-down transition-transform"></i>
+                </div>
+                <div class="panel-body">
+                    <input type="text" id="search" placeholder="Název objektu..." class="w-full p-3 bg-slate-100 rounded-lg mb-3">
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        <select id="fOkres" class="p-3 bg-slate-100 rounded-lg">
+                            <option value="all">Všechny okresy</option>
+                            <option value="CB">Č. Budějovice</option>
+                            <option value="TA">Tábor</option>
+                            <option value="CK">Č. Krumlov</option>
+                            <option value="PT">Prachatice</option>
+                            <option value="PI">Písek</option>
+                            <option value="ST">Strakonice</option>
+                        </select>
+                        <select id="fKat" class="p-3 bg-slate-100 rounded-lg">
+                            <option value="all">Všechny kat.</option>
+                            <option value="1.">Kat. I (Vysoká)</option>
+                            <option value="II.">Kat. II (Střední)</option>
+                        </select>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon success">
-                            <i class="fas fa-ruler-combined"></i>
-                        </div>
-                        <div class="stat-value" id="totalArea">198k</div>
-                        <div class="stat-label">m² celkem</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon warning">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="stat-value" id="completedAreals">28</div>
-                        <div class="stat-label">Dokončeno</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon danger">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="stat-value" id="highRisk">13</div>
-                        <div class="stat-label">Vysoké riziko</div>
-                    </div>
+                    <label class="flex items-center gap-3 p-2 bg-slate-50 rounded-lg cursor-pointer">
+                        <input type="checkbox" id="tHeat" class="w-5 h-5 accent-blue-600">
+                        <span class="text-sm font-medium">Zobrazit heatmapu rizik</span>
+                    </label>
                 </div>
             </div>
 
-            <!-- Quick Filters -->
-            <div class="sidebar-section">
-                <h3 class="section-title">Rychlé Filtry</h3>
-                <div class="quick-filters">
-                    <div class="quick-filter active" data-filter="all">Vše</div>
-                    <div class="quick-filter" data-filter="cat-1">Kategorie I.</div>
-                    <div class="quick-filter" data-filter="cat-2">Kategorie II.</div>
-                    <div class="quick-filter" data-filter="top10">Top 10</div>
-                    <div class="quick-filter" data-filter="uncompleted">Nedokončené</div>
+            <!-- Route Planner -->
+            <div class="panel-section">
+                <div class="panel-head">
+                    <span><i class="fas fa-route mr-2 text-purple-600"></i> Plánovač výjezdů</span>
+                    <i class="fas fa-chevron-down transition-transform"></i>
+                </div>
+                <div class="panel-body">
+                    <div class="p-3 bg-purple-50 rounded-xl border border-purple-100 mb-3">
+                        <div class="flex justify-between text-xs font-bold text-purple-700 uppercase mb-2">
+                            <span>Zvolená trasa</span>
+                            <span id="routeMeta">0 km | 0 min</span>
+                        </div>
+                        <div id="routeList" class="flex flex-wrap gap-2 text-xs">
+                            <span class="text-slate-400 italic">Klikněte na areály v mapě...</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="flex-1 p-3 bg-purple-600 text-white rounded-xl font-bold text-sm" id="optimizeBtn">
+                            <i class="fas fa-magic mr-1"></i> Optimalizovat
+                        </button>
+                        <button class="p-3 bg-slate-200 text-slate-600 rounded-xl" id="clearRouteBtn">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <button class="w-full mt-2 p-3 bg-blue-600 text-white rounded-xl font-bold text-sm" id="generatePDFBtn">
+                        <i class="fas fa-robot mr-1"></i> Generovat AI Protokol (PDF)
+                    </button>
                 </div>
             </div>
 
-            <!-- Filters -->
-            <div class="sidebar-section">
-                <h3 class="section-title">Filtry</h3>
-                
-                <!-- Search -->
-                <div class="filter-group">
-                    <label class="filter-label">Vyhledávání</label>
-                    <input type="text" class="input" id="searchInput" placeholder="Název, okres, typ...">
+            <!-- Stats -->
+            <div class="panel-section">
+                <div class="panel-head">
+                    <span><i class="fas fa-chart-pie mr-2 text-emerald-600"></i> Statistiky</span>
+                    <i class="fas fa-chevron-down transition-transform"></i>
                 </div>
-
-                <!-- District -->
-                <div class="filter-group">
-                    <label class="filter-label">Okres</label>
-                    <select class="input" id="districtFilter">
-                        <option value="">Všechny okresy</option>
-                        <option value="CB">České Budějovice (19)</option>
-                        <option value="TA">Tábor (10)</option>
-                        <option value="CK">Český Krumlov (4)</option>
-                        <option value="PT">Prachatice (4)</option>
-                        <option value="PI">Písek (2)</option>
-                        <option value="ST">Strakonice (2)</option>
-                    </select>
-                </div>
-
-                <!-- Category -->
-                <div class="filter-group">
-                    <label class="filter-label">Kategorie</label>
-                    <select class="input" id="categoryFilter">
-                        <option value="">Všechny kategorie</option>
-                        <option value="I.">Kategorie I. (23)</option>
-                        <option value="II.">Kategorie II. (15)</option>
-                        <option value="null">Bez kategorie (3)</option>
-                    </select>
-                </div>
-
-                <!-- Type -->
-                <div class="filter-group">
-                    <label class="filter-label">Typ objektu</label>
-                    <select class="input" id="typeFilter">
-                        <option value="">Všechny typy</option>
-                        <option value="VDJ">VDJ - Vodojem (32)</option>
-                        <option value="ÚV">ÚV - Úpravna vody (3)</option>
-                        <option value="ČS">ČS - Čerpací stanice (3)</option>
-                        <option value="Vrt">Vrt (1)</option>
-                        <option value="Provozní Vodojem">Provozní Vodojem (1)</option>
-                    </select>
-                </div>
-
-                <!-- Area Range -->
-                <div class="filter-group">
-                    <label class="filter-label">Výměra plochy (m²)</label>
-                    <div class="range-slider">
-                        <div class="range-values">
-                            <span id="minAreaValue">395</span>
-                            <span id="maxAreaValue">74,777</span>
+                <div class="panel-body">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <span class="block text-2xl font-black text-blue-600" id="sCount">0</span>
+                            <span class="text-[10px] text-slate-500 uppercase font-bold">Počet areálů</span>
                         </div>
-                        <input type="range" id="minAreaRange" min="395" max="74777" value="395" step="100">
-                        <input type="range" id="maxAreaRange" min="395" max="74777" value="74777" step="100">
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <span class="block text-2xl font-black text-emerald-600" id="sDone">0</span>
+                            <span class="text-[10px] text-slate-500 uppercase font-bold">Hotovo (7d)</span>
+                        </div>
+                    </div>
+                    <button class="w-full mt-3 p-3 bg-slate-800 text-white rounded-xl font-bold text-sm" id="exportCSVBtn">
+                        <i class="fas fa-file-csv mr-1"></i> Exportovat CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Modal: Areal Editor -->
+    <div id="modal" class="modal-overlay">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div class="p-6 bg-slate-50 border-b flex justify-between items-center">
+                <h2 class="text-xl font-extrabold" id="mTitle">Editace areálu</h2>
+                <button id="closeModalBtn" class="text-2xl">&times;</button>
+            </div>
+            <form id="arealForm" class="p-6 space-y-4">
+                <input type="hidden" id="aId">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Název objektu</label>
+                    <input type="text" id="aName" required class="w-full p-3 bg-slate-100 rounded-lg">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Okres</label>
+                        <select id="aOkres" class="w-full p-3 bg-slate-100 rounded-lg">
+                            <option value="CB">CB</option><option value="TA">TA</option><option value="CK">CK</option>
+                            <option value="PT">PT</option><option value="PI">PI</option><option value="ST">ST</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Kategorie</label>
+                        <select id="aKat" class="w-full p-3 bg-slate-100 rounded-lg">
+                            <option value="">Bez kat.</option>
+                            <option value="1.">I. Vysoká</option>
+                            <option value="II.">II. Střední</option>
+                        </select>
                     </div>
                 </div>
-
-                <!-- Status -->
-                <div class="filter-group">
-                    <label class="filter-label">Stav dokončení</label>
-                    <select class="input" id="statusFilter">
-                        <option value="">Všechny stavy</option>
-                        <option value="completed">Dokončeno</option>
-                        <option value="pending">Nedokončeno</option>
-                    </select>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Výměra (m²)</label>
+                        <input type="number" id="aArea" required class="w-full p-3 bg-slate-100 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Plot (bm)</label>
+                        <input type="number" id="aFence" required class="w-full p-3 bg-slate-100 rounded-lg">
+                    </div>
                 </div>
-
-                <!-- Reset -->
-                <button class="btn btn-secondary" id="resetFilters" style="width: 100%; margin-top: 1rem;">
-                    <i class="fas fa-redo"></i>
-                    Resetovat Filtry
-                </button>
-            </div>
-
-            <!-- Saved Filters -->
-            <div class="sidebar-section">
-                <h3 class="section-title">Uložené Filtry</h3>
-                <div id="savedFilters">
-                    <p style="font-size: 0.875rem; color: var(--text-tertiary);">Žádné uložené filtry</p>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" class="flex-1 p-4 bg-slate-100 rounded-xl font-bold" id="cancelFormBtn">Zrušit</button>
+                    <button type="submit" class="flex-1 p-4 bg-blue-600 text-white rounded-xl font-bold">Uložit data</button>
                 </div>
-                <button class="btn btn-secondary" id="saveFilterBtn" style="width: 100%; margin-top: 0.75rem;">
-                    <i class="fas fa-save"></i>
-                    Uložit Aktuální Filtr
-                </button>
-            </div>
-        </aside>
+            </form>
+        </div>
+    </div>
 
-        <!-- Map -->
-        <main class="map-container">
-            <div id="map"></div>
+    <!-- ✅ FIX #1: Load Scripts in Correct Order -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-heat/0.2.0/leaflet-heat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script type="module">
+        // ✅ FIX #3: Load Real Data (41 Areals)
+        const arealData = [
+            { id: 1, nazev: "VDJ Amerika II", okres: "PI", kategorie: "1.", oploceni: 293, vymera: 3303, lat: 49.3051, lon: 14.1661 },
+            { id: 2, nazev: "VDJ Drahonice", okres: "ST", kategorie: "1.", oploceni: 376, vymera: 5953, lat: 49.2029, lon: 14.0637 },
+            { id: 3, nazev: "VDJ Vodňany", okres: "ST", kategorie: "1.", oploceni: 252, vymera: 1594, lat: 49.1477, lon: 14.1752 },
+            { id: 4, nazev: "VDJ Hlavatce", okres: "CB", kategorie: "", oploceni: 424, vymera: 7968, lat: 49.0635, lon: 14.2677 },
+            { id: 5, nazev: "VDJ Šibeniční vrch I", okres: "PT", kategorie: "1.", oploceni: 245, vymera: 1835, lat: 49.0133, lon: 13.9944 },
+            { id: 6, nazev: "ÚV Husinecka přehrada", okres: "PT", kategorie: "", oploceni: 703, vymera: 4908, lat: 49.0588, lon: 13.9947 },
+            { id: 7, nazev: "VDJ Šibeniční vrch II", okres: "PT", kategorie: "1.", oploceni: 340, vymera: 3206, lat: 49.0267, lon: 13.9940 },
+            { id: 8, nazev: "VDJ Zálužany", okres: "PI", kategorie: "", oploceni: 299, vymera: 2350, lat: 49.3163, lon: 14.0961 },
+            { id: 9, nazev: "VDJ Ptáčník", okres: "PT", kategorie: "II.", oploceni: 239, vymera: 1070, lat: 49.0911, lon: 13.9480 },
+            { id: 10, nazev: "VDJ Zdoba", okres: "CB", kategorie: "II.", oploceni: 225, vymera: 15523, lat: 49.2124, lon: 14.3380 },
+            { id: 11, nazev: "VDJ Domoradice", okres: "CK", kategorie: "1.", oploceni: 450, vymera: 4148, lat: 48.8127, lon: 14.2730 },
+            { id: 12, nazev: "VDJ Horní Brána", okres: "CK", kategorie: "1.", oploceni: 187, vymera: 1665, lat: 48.8079, lon: 14.3293 },
+            { id: 13, nazev: "VDJ Netřebice", okres: "CK", kategorie: "1.", oploceni: 136, vymera: 877, lat: 48.8563, lon: 14.3186 },
+            { id: 14, nazev: "VDJ Plešivec", okres: "CK", kategorie: "1.", oploceni: 119, vymera: 975, lat: 48.8230, lon: 14.1652 },
+            { id: 15, nazev: "VDJ Doudleby", okres: "CB", kategorie: "II.", oploceni: 79, vymera: 413, lat: 48.9919, lon: 14.5055 },
+            { id: 16, nazev: "VDJ Jankov", okres: "CB", kategorie: "1.", oploceni: 106, vymera: 784, lat: 49.0335, lon: 14.4928 },
+            { id: 17, nazev: "VDJ Hosín II", okres: "CB", kategorie: "1.", oploceni: 399, vymera: 4173, lat: 49.0161, lon: 14.4527 },
+            { id: 18, nazev: "VDJ Chlum", okres: "CB", kategorie: "II.", oploceni: 63, vymera: 535, lat: 49.0919, lon: 14.5341 },
+            { id: 19, nazev: "VDJ Chotýčany", okres: "CB", kategorie: "II.", oploceni: 338, vymera: 4775, lat: 49.1336, lon: 14.4988 },
+            { id: 20, nazev: "VDJ Rudolfov III", okres: "CB", kategorie: "1.", oploceni: 174, vymera: 1868, lat: 48.9888, lon: 14.5958 },
+            { id: 21, nazev: "VDJ Rimov - Vesce", okres: "CB", kategorie: "1.", oploceni: 99, vymera: 662, lat: 48.8427, lon: 14.5250 },
+            { id: 22, nazev: "VDJ Hosin", okres: "CB", kategorie: "II.", oploceni: 125, vymera: 809, lat: 49.0138, lon: 14.4502 },
+            { id: 23, nazev: "VDJ Včelná", okres: "CB", kategorie: "II.", oploceni: 476, vymera: 8660, lat: 48.9663, lon: 14.4547 },
+            { id: 24, nazev: "VDJ Húry", okres: "CB", kategorie: "1.", oploceni: 0, vymera: 395, lat: 49.0586, lon: 14.4819 },
+            { id: 25, nazev: "VDJ Chlumec", okres: "CB", kategorie: "II.", oploceni: 110, vymera: 811, lat: 49.0541, lon: 14.4888 },
+            { id: 26, nazev: "VDJ Olešník", okres: "CB", kategorie: "1.", oploceni: 117, vymera: 380, lat: 49.0569, lon: 14.4986 },
+            { id: 27, nazev: "ČS Bukovec", okres: "CB", kategorie: "1.", oploceni: 300, vymera: 4943, lat: 48.9491, lon: 14.4808 },
+            { id: 28, nazev: "VDJ Heřman", okres: "CB", kategorie: "II.", oploceni: 119, vymera: 982, lat: 48.9916, lon: 14.5350 },
+            { id: 29, nazev: "ČS Vidov u řeky", okres: "CB", kategorie: "II.", oploceni: 212, vymera: 2501, lat: 48.9508, lon: 14.4797 },
+            { id: 30, nazev: "Vrt Vidov", okres: "CB", kategorie: "II.", oploceni: 164, vymera: 470, lat: 48.9511, lon: 14.4805 },
+            { id: 31, nazev: "ÚV Plav", okres: "CB", kategorie: "1.", oploceni: 1413, vymera: 74777, lat: 49.0061, lon: 14.4527 },
+            { id: 32, nazev: "VDJ Čekanice", okres: "TA", kategorie: "1.", oploceni: 450, vymera: 6344, lat: 49.4221, lon: 14.6898 },
+            { id: 33, nazev: "VDJ Svatá Anna", okres: "TA", kategorie: "1.", oploceni: 264, vymera: 4192, lat: 49.4011, lon: 14.6986 },
+            { id: 34, nazev: "VDJ Bezděčín", okres: "TA", kategorie: "1.", oploceni: 169, vymera: 1996, lat: 49.3816, lon: 14.7005 },
+            { id: 35, nazev: "VDJ Milevsko", okres: "TA", kategorie: "1.", oploceni: 129, vymera: 823, lat: 49.4525, lon: 14.3441 },
+            { id: 36, nazev: "VDJ Hodušín", okres: "TA", kategorie: "II.", oploceni: 205, vymera: 1708, lat: 49.4296, lon: 14.4742 },
+            { id: 37, nazev: "VDJ Všechov", okres: "TA", kategorie: "1.", oploceni: 199, vymera: 1574, lat: 49.4301, lon: 14.6232 },
+            { id: 38, nazev: "VDJ Zlukov", okres: "TA", kategorie: "II.", oploceni: 184, vymera: 1520, lat: 49.1962, lon: 14.7363 },
+            { id: 39, nazev: "ÚV Tábor", okres: "TA", kategorie: "II.", oploceni: 350, vymera: 12262, lat: 49.4228, lon: 14.6664 },
+            { id: 40, nazev: "ČS Sudoměřice", okres: "TA", kategorie: "1.", oploceni: 220, vymera: 2508, lat: 49.3686, lon: 14.7202 },
+            { id: 41, nazev: "Provozní Vodojem Tábor", okres: "TA", kategorie: "II.", oploceni: 155, vymera: 1853, lat: 49.4138, lon: 14.6591 }
+        ];
+
+        // App State
+        let map, clusters, heatLayer, markers = [];
+        let selectedRoute = [];
+        let addMode = false;
+        let activeLayers = { osm: null, sat: null };
+
+        const CONFIG = {
+            center: [49.15, 14.35],
+            zoom: 10,
+            storageKey: 'jvs_pro_v4',
+            avgSpeed: 45
+        };
+
+        // ✅ FIX #2: Initialize on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            initMap();
+            initEventListeners();
+            renderAll();
+            showToast("🚀 WaterMGMT PRO Připraven");
+        });
+
+        function initMap() {
+            map = L.map('map', { zoomControl: false }).setView(CONFIG.center, CONFIG.zoom);
             
-            <!-- Map Controls -->
-            <div class="map-controls">
-                <div class="map-control-btn active" id="toggleClustering" title="Clustering">
-                    <i class="fas fa-layer-group"></i>
-                </div>
-                <div class="map-control-btn" id="toggleHeatmap" title="Heatmapa">
-                    <i class="fas fa-fire"></i>
-                </div>
-                <div class="map-control-btn" id="measureTool" title="Měření vzdálenosti">
-                    <i class="fas fa-ruler"></i>
-                </div>
-                <div class="map-control-btn" id="drawPolygon" title="Měření pozemku">
-                    <i class="fas fa-draw-polygon"></i>
-                </div>
-                <div class="map-control-btn" id="fullscreenBtn" title="Celá obrazovka">
-                    <i class="fas fa-expand"></i>
-                </div>
-            </div>
-        </main>
-    </div>
+            activeLayers.osm = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+            
+            activeLayers.sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '© Esri'
+            });
 
-    <!-- Floating Action Button -->
-    <div class="fab" id="fabBtn">
-        <i class="fas fa-plus"></i>
-    </div>
+            clusters = L.markerClusterGroup({
+                maxClusterRadius: 50,
+                iconCreateFunction: (c) => L.divIcon({
+                    html: `<div class="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold border-2 border-white shadow-lg">${c.getChildCount()}</div>`,
+                    className: '', iconSize: [40, 40]
+                })
+            });
+            map.addLayer(clusters);
+        }
 
-    <!-- FAB Menu -->
-    <div class="fab-menu" id="fabMenu">
-        <div class="fab-menu-item" onclick="app.openAddArealModal()">
-            <i class="fas fa-map-marker-alt"></i>
-            <span class="fab-menu-label">Přidat Areál</span>
-        </div>
-        <div class="fab-menu-item" onclick="app.openAddMachineModal()">
-            <i class="fas fa-tractor"></i>
-            <span class="fab-menu-label">Přidat Stroj</span>
-        </div>
-        <div class="fab-menu-item" onclick="app.openServiceRecordModal()">
-            <i class="fas fa-tools"></i>
-            <span class="fab-menu-label">Servisní Záznam</span>
-        </div>
-    </div>
+        // ✅ FIX #2: Event Listeners
+        function initEventListeners() {
+            // Sidebar
+            document.getElementById('toggleSidebarBtn').addEventListener('click', toggleSidebar);
+            document.getElementById('closeSidebarBtn').addEventListener('click', toggleSidebar);
 
-    <!-- Add/Edit Areal Modal -->
-    <div class="modal" id="arealModal">
-        <div class="modal-content" style="width: 800px;">
-            <div class="modal-header">
-                <h2 class="modal-title">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span id="arealModalTitle">Přidat Nový Areál</span>
-                </h2>
-                <button class="modal-close" onclick="closeModal('arealModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="arealForm">
-                    <div class="form-grid">
-                        <div class="filter-group">
-                            <label class="filter-label">Název objektu *</label>
-                            <input type="text" class="input" id="arealName" required placeholder="VDJ Amerika II">
+            // Filters
+            document.getElementById('search').addEventListener('input', applyFilters);
+            document.getElementById('fOkres').addEventListener('change', applyFilters);
+            document.getElementById('fKat').addEventListener('change', applyFilters);
+            document.getElementById('tHeat').addEventListener('change', toggleHeatmap);
+
+            // Route
+            document.getElementById('optimizeBtn').addEventListener('click', optimizeRoute);
+            document.getElementById('clearRouteBtn').addEventListener('click', clearRoute);
+            document.getElementById('generatePDFBtn').addEventListener('click', generateAIReport);
+
+            // Export
+            document.getElementById('exportCSVBtn').addEventListener('click', exportData);
+
+            // Layers
+            document.getElementById('layerOSM').addEventListener('click', () => switchLayer('osm'));
+            document.getElementById('layerSAT').addEventListener('click', () => switchLayer('sat'));
+
+            // Modal
+            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+            document.getElementById('cancelFormBtn').addEventListener('click', closeModal);
+            document.getElementById('arealForm').addEventListener('submit', handleFormSubmit);
+
+            // Panel Accordions
+            document.querySelectorAll('.panel-head').forEach(head => {
+                head.addEventListener('click', () => {
+                    head.parentElement.classList.toggle('open');
+                });
+            });
+        }
+
+        function renderAll() {
+            clusters.clearLayers();
+            markers = [];
+
+            const search = document.getElementById('search').value.toLowerCase();
+            const okres = document.getElementById('fOkres').value;
+            const kat = document.getElementById('fKat').value;
+
+            const filtered = arealData.filter(a => {
+                const mS = a.nazev.toLowerCase().includes(search);
+                const mO = okres === 'all' || a.okres === okres;
+                const mK = kat === 'all' || a.kategorie === kat;
+                return mS && mO && mK;
+            });
+
+            filtered.forEach(a => {
+                const color = a.kategorie === '1.' ? '#ef4444' : (a.kategorie === 'II.' ? '#f59e0b' : '#64748b');
+                const isCrit = a.kategorie === '1.' && !a.lastUdrzba;
+
+                const icon = L.divIcon({
+                    html: `<div class="custom-marker ${isCrit ? 'marker-critical' : ''}" style="background:${color}"></div>`,
+                    className: '', iconSize: [30, 30], iconAnchor: [15, 30]
+                });
+
+                const m = L.marker([a.lat, a.lon], { icon });
+                m.on('click', () => handleMarkerClick(a));
+                clusters.addLayer(m);
+                markers.push({ id: a.id, marker: m });
+            });
+
+            updateStats(filtered);
+        }
+
+        async function handleMarkerClick(a) {
+            const sidebar = document.getElementById('sidebar');
+            if(sidebar.classList.contains('active')) {
+                addToRoute(a);
+                return;
+            }
+
+            const weather = await fetchWeather(a.lat, a.lon);
+            const date = a.lastUdrzba ? new Date(a.lastUdrzba).toLocaleDateString('cs-CZ') : 'Nebyla';
+
+            const popup = L.popup()
+                .setLatLng([a.lat, a.lon])
+                .setContent(`
+                    <div class="p-2 min-w-[200px]">
+                        <h3 class="font-bold border-b pb-1 mb-2">${a.nazev}</h3>
+                        <div class="text-xs space-y-1 mb-3">
+                            <p><b>Okres:</b> ${a.okres} | <b>Kat:</b> ${a.kategorie || 'N/A'}</p>
+                            <p><b>Plocha:</b> ${a.vymera} m² | <b>Plot:</b> ${a.oploceni} bm</p>
+                            <p><b>Poslední:</b> ${date}</p>
                         </div>
-
-                        <div class="filter-group">
-                            <label class="filter-label">Typ objektu *</label>
-                            <select class="input" id="arealType" required>
-                                <option value="">Vyberte typ</option>
-                                <option value="VDJ">VDJ - Vodojem</option>
-                                <option value="ÚV">ÚV - Úpravna vody</option>
-                                <option value="ČS">ČS - Čerpací stanice</option>
-                                <option value="Vrt">Vrt</option>
-                                <option value="Provozní Vodojem">Provozní Vodojem</option>
-                            </select>
+                        <div class="bg-blue-50 p-2 rounded text-[10px] mb-3 flex justify-between">
+                            <span>🌡️ ${weather.temp}°C</span>
+                            <span>💨 ${weather.wind} km/h</span>
                         </div>
-
-                        <div class="filter-group">
-                            <label class="filter-label">Okres *</label>
-                            <select class="input" id="arealDistrict" required>
-                                <option value="">Vyberte okres</option>
-                                <option value="CB">České Budějovice</option>
-                                <option value="TA">Tábor</option>
-                                <option value="CK">Český Krumlov</option>
-                                <option value="PT">Prachatice</option>
-                                <option value="PI">Písek</option>
-                                <option value="ST">Strakonice</option>
-                            </select>
-                        </div>
-
-                        <div class="filter-group">
-                            <label class="filter-label">Kategorie</label>
-                            <select class="input" id="arealCategory">
-                                <option value="">Bez kategorie</option>
-                                <option value="I.">Kategorie I.</option>
-                                <option value="II.">Kategorie II.</option>
-                            </select>
-                        </div>
-
-                        <div class="filter-group">
-                            <label class="filter-label">Výměra plochy (m²) *</label>
-                            <input type="number" class="input" id="arealArea" required placeholder="3303">
-                        </div>
-
-                        <div class="filter-group">
-                            <label class="filter-label">Délka oplocení (m)</label>
-                            <input type="number" class="input" id="arealFence" placeholder="293">
-                        </div>
-
-                        <div class="filter-group form-grid-full">
-                            <label class="filter-label">GPS Souřadnice *</label>
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle"></i>
-                                <div class="alert-content">
-                                    <div class="alert-text">Klikněte na mapu níže pro výběr polohy nebo zadejte souřadnice ručně.</div>
-                                </div>
-                            </div>
-                            <div class="gps-picker" id="gpsPicker"></div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div class="filter-group">
-                                    <label class="filter-label">Latitude</label>
-                                    <input type="number" class="input" id="arealLat" step="0.000001" required placeholder="49.305131">
-                                </div>
-                                <div class="filter-group">
-                                    <label class="filter-label">Longitude</label>
-                                    <input type="number" class="input" id="arealLng" step="0.000001" required placeholder="14.166126">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="filter-group form-grid-full">
-                            <label class="filter-label">Poznámky</label>
-                            <textarea class="input" id="arealNotes" placeholder="Dodatečné informace o areálu..."></textarea>
-                        </div>
-
-                        <div class="filter-group form-grid-full">
-                            <label class="filter-label">Fotografie</label>
-                            <div class="file-upload-area" id="photoUploadArea">
-                                <div class="file-upload-icon">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                </div>
-                                <div class="file-upload-text">
-                                    Klikněte nebo přetáhněte fotografie sem
-                                </div>
-                                <input type="file" id="photoInput" accept="image/*" multiple style="display: none;">
-                            </div>
-                            <div class="image-preview-grid" id="imagePreviewGrid"></div>
+                        <div class="flex gap-2">
+                            <button onclick="window.markDone(${a.id})" class="flex-1 bg-emerald-500 text-white p-2 rounded text-[10px] font-bold">HOTOVO</button>
+                            <button onclick="window.editAreal(${a.id})" class="flex-1 bg-slate-100 p-2 rounded text-[10px] font-bold">UPRAVIT</button>
                         </div>
                     </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('arealModal')">
-                    Zrušit
-                </button>
-                <button class="btn btn-danger" id="deleteArealBtn" style="display: none;">
-                    <i class="fas fa-trash"></i>
-                    Smazat Areál
-                </button>
-                <button class="btn btn-primary" id="saveArealBtn">
-                    <i class="fas fa-save"></i>
-                    Uložit Areál
-                </button>
-            </div>
-        </div>
-    </div>
+                `)
+                .openOn(map);
+        }
 
-    <!-- Service Book Modal -->
-    <div class="modal" id="serviceBookModal">
-        <div class="modal-content" style="width: 1000px;">
-            <div class="modal-header">
-                <h2 class="modal-title">
-                    <i class="fas fa-wrench"></i>
-                    Servisní Knížka
-                </h2>
-                <button class="modal-close" onclick="closeModal('serviceBookModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="tabs">
-                    <button class="tab active" data-tab="machines">Stroje</button>
-                    <button class="tab" data-tab="service-records">Servisní Záznamy</button>
-                    <button class="tab" data-tab="maintenance">Plánovaná Údržba</button>
+        function addToRoute(a) {
+            if(selectedRoute.find(r => r.id === a.id)) return;
+            selectedRoute.push(a);
+            updateRouteUI();
+            showToast(`Přidáno: ${a.nazev}`);
+        }
+
+        function updateRouteUI() {
+            const list = document.getElementById('routeList');
+            if(selectedRoute.length === 0) {
+                list.innerHTML = `<span class="text-slate-400 italic">Klikněte na areály v mapě...</span>`;
+                document.getElementById('routeMeta').textContent = '0 km | 0 min';
+                return;
+            }
+
+            list.innerHTML = selectedRoute.map((a, i) => `
+                <div class="bg-white px-2 py-1 rounded-full border border-purple-200 flex items-center gap-2">
+                    <span class="font-black text-purple-600">${i+1}</span>
+                    <span class="text-xs">${a.nazev}</span>
+                    <i class="fas fa-times opacity-30 cursor-pointer" onclick="window.removeFromRoute(${a.id})"></i>
                 </div>
+            `).join('');
 
-                <!-- Tab: Machines -->
-                <div class="tab-content active" id="tab-machines">
-                    <button class="btn btn-primary" onclick="app.openAddMachineModal()" style="margin-bottom: 1.5rem;">
-                        <i class="fas fa-plus"></i>
-                        Přidat Stroj
-                    </button>
-                    <div id="machinesList">
-                        <!-- Dynamically populated -->
-                    </div>
-                </div>
+            let d = 0;
+            for(let i=0; i<selectedRoute.length-1; i++) {
+                const p1 = L.latLng(selectedRoute[i].lat, selectedRoute[i].lon);
+                const p2 = L.latLng(selectedRoute[i+1].lat, selectedRoute[i+1].lon);
+                d += p1.distanceTo(p2);
+            }
+            const km = (d/1000) * 1.3;
+            const t = Math.round(km / CONFIG.avgSpeed * 60);
+            document.getElementById('routeMeta').textContent = `${km.toFixed(1)} km | ~${t} min`;
+        }
 
-                <!-- Tab: Service Records -->
-                <div class="tab-content" id="tab-service-records">
-                    <button class="btn btn-primary" onclick="app.openServiceRecordModal()" style="margin-bottom: 1.5rem;">
-                        <i class="fas fa-plus"></i>
-                        Nový Servisní Záznam
-                    </button>
-                    <div class="service-list" id="serviceRecordsList">
-                        <!-- Dynamically populated -->
-                    </div>
-                </div>
+        function optimizeRoute() {
+            if(selectedRoute.length < 3) return showToast("Vyberte aspoň 3 body", "warning");
+            
+            let unvisited = [...selectedRoute];
+            let optimized = [unvisited.shift()];
+            
+            while(unvisited.length > 0) {
+                let last = optimized[optimized.length-1];
+                let bestIdx = 0;
+                let bestDist = Infinity;
+                
+                unvisited.forEach((curr, idx) => {
+                    let d = L.latLng(last.lat, last.lon).distanceTo(L.latLng(curr.lat, curr.lon));
+                    if(d < bestDist) { bestDist = d; bestIdx = idx; }
+                });
+                optimized.push(unvisited.splice(bestIdx, 1)[0]);
+            }
+            selectedRoute = optimized;
+            updateRouteUI();
+            showToast("✅ Trasa optimalizována", "success");
+        }
 
-                <!-- Tab: Maintenance -->
-                <div class="tab-content" id="tab-maintenance">
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <div class="alert-content">
-                            <div class="alert-title">Nadcházející Údržba</div>
-                            <div class="alert-text">XRot 95 #1 potřebuje výměnu oleje za 15 motohodin</div>
-                        </div>
-                    </div>
-                    <div id="maintenanceList">
-                        <!-- Dynamically populated -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        function clearRoute() {
+            selectedRoute = [];
+            updateRouteUI();
+            showToast("Trasa vymazána");
+        }
 
-    <!-- Add Machine Modal -->
-    <div class="modal" id="addMachineModal">
-        <div class="modal-content" style="width: 600px;">
-            <div class="modal-header">
-                <h2 class="modal-title">
-                    <i class="fas fa-tractor"></i>
-                    Přidat Stroj
-                </h2>
-                <button class="modal-close" onclick="closeModal('addMachineModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="machineForm">
-                    <div class="form-grid">
-                        <div class="filter-group">
-                            <label class="filter-label">Název stroje *</label>
-                            <input type="text" class="input" id="machineName" required placeholder="XRot 95 #1">
-                        </div>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
 
-                        <div class="filter-group">
-                            <label class="filter-label">Model *</label>
-                            <select class="input" id="machineModel" required>
-                                <option value="">Vyberte model</option>
-                                <option value="XRot 95 EVO PRO">XRot 95 EVO PRO</option>
-                                <option value="XRot 80 EVO">XRot 80 EVO</option>
-                                <option value="XRot 70 EVO">XRot 70 EVO</option>
-                                <option value="XFlail 80">XFlail 80</option>
-                                <option value="eRot 70 EVO">eRot 70 EVO (Elektrický)</option>
-                            </select>
-                        </div>
+        function switchLayer(l) {
+            if(l === 'osm') {
+                map.removeLayer(activeLayers.sat);
+                map.addLayer(activeLayers.osm);
+            } else {
+                map.removeLayer(activeLayers.osm);
+                map.addLayer(activeLayers.sat);
+            }
+        }
 
-                        <div class="filter-group">
-                            <label class="filter-label">Výrobní číslo</label>
-                            <input type="text" class="input" id="machineSerial" placeholder="RC62H00***">
-                        </div>
+        function toggleHeatmap() {
+            const active = document.getElementById('tHeat').checked;
+            if(heatLayer) map.removeLayer(heatLayer);
+            if(active) {
+                const points = arealData.map(a => [a.lat, a.lon, a.kategorie === '1.' ? 1 : 0.5]);
+                heatLayer = L.heatLayer(points, {radius: 40, blur: 25}).addTo(map);
+            }
+        }
 
-                        <div class="filter-group">
-                            <label class="filter-label">Rok výroby</label>
-                            <input type="number" class="input" id="machineYear" placeholder="2024">
-                        </div>
+        function showToast(m, type = 'info') {
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.innerHTML = `<i class="fas fa-info-circle"></i> ${m}`;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
 
-                        <div class="filter-group">
-                            <label class="filter-label">Aktuální motohodiny</label>
-                            <input type="number" class="input" id="machineHours" placeholder="245">
-                        </div>
+        function loadData() {
+            const saved = localStorage.getItem(CONFIG.storageKey);
+            if(saved) {
+                const parsed = JSON.parse(saved);
+                arealData.forEach((a, i) => {
+                    const s = parsed.find(x => x.id === a.id);
+                    if(s) arealData[i] = {...a, ...s};
+                });
+            }
+        }
 
-                        <div class="filter-group">
-                            <label class="filter-label">Stav</label>
-                            <select class="input" id="machineStatus">
-                                <option value="active">Aktivní</option>
-                                <option value="maintenance">V servisu</option>
-                                <option value="inactive">Neaktivní</option>
-                            </select>
-                        </div>
+        function saveData() {
+            localStorage.setItem(CONFIG.storageKey, JSON.stringify(arealData));
+        }
 
-                        <div class="filter-group form-grid-full">
-                            <label class="filter-label">Poznámky</label>
-                            <textarea class="input" id="machineNotes" placeholder="Dodatečné informace o stroji..."></textarea>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('addMachineModal')">
-                    Zrušit
-                </button>
-                <button class="btn btn-primary" id="saveMachineBtn">
-                    <i class="fas fa-save"></i>
-                    Uložit Stroj
-                </button>
-            </div>
-        </div>
-    </div>
+        function updateStats(data) {
+            const count = data.length;
+            const area = data.reduce((s, a) => s + a.vymera, 0);
+            const crit = data.filter(a => a.kategorie === '1.').length;
+            const done = data.filter(a => a.lastUdrzba && (Date.now() - a.lastUdrzba < 7*86400000)).length;
 
-    <!-- Service Record Modal -->
-    <div class="modal" id="serviceRecordModal">
-        <div class="modal-content" style="width: 700px;">
-            <div class="modal-header">
-                <h2 class="modal-title">
-                    <i class="fas fa-tools"></i>
-                    Nový Servisní Záznam
-                </h2>
-                <button class="modal-close" onclick="closeModal('serviceRecordModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="serviceRecordForm">
-                    <div class="form-grid">
-                        <div class="filter-group">
-                            <label class="filter-label">Stroj *</label>
-                            <select class="input" id="serviceMachine" required>
-                                <option value="">Vyberte stroj</option>
-                                <!-- Dynamically populated -->
-                            </select>
-                        </div>
+            document.getElementById('qsCount').textContent = count;
+            document.getElementById('sCount').textContent = count;
+            document.getElementById('qsArea').textContent = (area/1000).toFixed(1) + 'k';
+            document.getElementById('qsCrit').textContent = crit;
+            document.getElementById('sDone').textContent = done;
+        }
 
-                        <div class="filter-group">
-                            <label class="filter-label">Datum servisu *</label>
-                            <input type="date" class="input" id="serviceDate" required>
-                        </div>
+        async function fetchWeather(lat, lon) {
+            try {
+                const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m`);
+                const d = await r.json();
+                return { temp: Math.round(d.current.temperature_2m), wind: Math.round(d.current.wind_speed_10m) };
+            } catch { return { temp: '?', wind: '?' }; }
+        }
 
-                        <div class="filter-group">
-                            <label class="filter-label">Typ servisu *</label>
-                            <select class="input" id="serviceType" required>
-                                <option value="">Vyberte typ</option>
-                                <option value="Pravidelná údržba">Pravidelná údržba</option>
-                                <option value="Výměna oleje">Výměna oleje</option>
-                                <option value="Výměna filtru">Výměna filtru</option>
-                                <option value="Výměna čepelí">Výměna čepelí</option>
-                                <option value="Oprava">Oprava</option>
-                                <option value="Kontrola">Kontrola</option>
-                                <option value="Jiné">Jiné</option>
-                            </select>
-                        </div>
+        function editAreal(id) {
+            const a = arealData.find(x => x.id === id);
+            document.getElementById('aId').value = a.id;
+            document.getElementById('aName').value = a.nazev;
+            document.getElementById('aOkres').value = a.okres;
+            document.getElementById('aKat').value = a.kategorie;
+            document.getElementById('aArea').value = a.vymera;
+            document.getElementById('aFence').value = a.oploceni;
+            document.getElementById('modal').classList.add('active');
+        }
 
-                        <div class="filter-group">
-                            <label class="filter-label">Motohodiny při servisu</label>
-                            <input type="number" class="input" id="serviceHours" placeholder="245">
-                        </div>
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
 
-                        <div class="filter-group">
-                            <label class="filter-label">Náklady (Kč)</label>
-                            <input type="number" class="input" id="serviceCost" placeholder="5000">
-                        </div>
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('aId').value);
+            const idx = arealData.findIndex(x => x.id === id);
+            
+            arealData[idx] = {
+                ...arealData[idx],
+                nazev: document.getElementById('aName').value,
+                okres: document.getElementById('aOkres').value,
+                kategorie: document.getElementById('aKat').value,
+                vymera: parseInt(document.getElementById('aArea').value),
+                oploceni: parseInt(document.getElementById('aFence').value)
+            };
 
-                        <div class="filter-group">
-                            <label class="filter-label">Technik</label>
-                            <input type="text" class="input" id="serviceTechnician" placeholder="Jan Novák">
-                        </div>
+            saveData();
+            renderAll();
+            closeModal();
+            showToast("✅ Změny uloženy");
+        }
 
-                        <div class="filter-group form-grid-full">
-                            <label class="filter-label">Popis prací *</label>
-                            <textarea class="input" id="serviceDescription" required placeholder="Detailní popis provedených prací..."></textarea>
-                        </div>
+        function markDone(id) {
+            const idx = arealData.findIndex(x => x.id === id);
+            arealData[idx].lastUdrzba = Date.now();
+            saveData();
+            renderAll();
+            map.closePopup();
+            showToast("✅ Údržba zaznamenána", "success");
+        }
 
-                        <div class="filter-group form-grid-full">
-                            <label class="filter-label">Použité díly</label>
-                            <textarea class="input" id="serviceParts" placeholder="Seznam použitých náhradních dílů..."></textarea>
-                        </div>
+        function generateAIReport() {
+            if(selectedRoute.length === 0) return showToast("Prázdná trasa", "warning");
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(20);
+            doc.text("PROTOKOL ÚDRŽBY JVS", 105, 20, { align: 'center' });
+            doc.setFontSize(10);
+            doc.text(`Datum výjezdu: ${new Date().toLocaleDateString('cs-CZ')}`, 105, 28, { align: 'center' });
+            
+            let y = 45;
+            selectedRoute.forEach((a, i) => {
+                doc.setFont(undefined, 'bold');
+                doc.text(`${i+1}. ${a.nazev} (${a.okres})`, 20, y);
+                doc.setFont(undefined, 'normal');
+                doc.text(`Plocha: ${a.vymera} m2 | Plot: ${a.oploceni} bm | Kat: ${a.kategorie || 'N/A'}`, 25, y + 5);
+                doc.text(`Úkoly: Sečení, kontrola zámků, revize oplocení.`, 25, y + 10);
+                doc.rect(170, y - 2, 10, 10);
+                y += 25;
+                if(y > 270) { doc.addPage(); y = 20; }
+            });
 
-                        <div class="filter-group form-grid-full">
-                            <label class="filter-label">Fotografie</label>
-                            <div class="file-upload-area" id="servicePhotoUploadArea">
-                                <div class="file-upload-icon">
-                                    <i class="fas fa-camera"></i>
-                                </div>
-                                <div class="file-upload-text">
-                                    Přidat fotografie ze servisu
-                                </div>
-                                <input type="file" id="servicePhotoInput" accept="image/*" multiple style="display: none;">
-                            </div>
-                            <div class="image-preview-grid" id="serviceImagePreviewGrid"></div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('serviceRecordModal')">
-                    Zrušit
-                </button>
-                <button class="btn btn-primary" id="saveServiceRecordBtn">
-                    <i class="fas fa-save"></i>
-                    Uložit Záznam
-                </button>
-            </div>
-        </div>
-    </div>
+            doc.save(`Protokol-JVS-${Date.now()}.pdf`);
+            showToast("✅ PDF report vygenerován");
+        }
 
-    <!-- Route Planner Modal -->
-    <div class="modal" id="routePlannerModal">
-        <div class="modal-content" style="width: 900px;">
-            <div class="modal-header">
-                <h2 class="modal-title">
-                    <i class="fas fa-route"></i>
-                    Plánovač Tras
-                </h2>
-                <button class="modal-close" onclick="closeModal('routePlannerModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="tabs">
-                    <button class="tab active" data-tab="select">1. Výběr Areálů</button>
-                    <button class="tab" data-tab="optimize">2. Optimalizace</button>
-                    <button class="tab" data-tab="export">3. Export</button>
-                </div>
+        function exportData() {
+            const csv = [
+                ['Název', 'Okres', 'Kategorie', 'Výměra (m²)', 'Oplocení (bm)', 'Latitude', 'Longitude'],
+                ...arealData.map(a => [a.nazev, a.okres, a.kategorie || 'N/A', a.vymera, a.oploceni, a.lat, a.lon])
+            ].map(row => row.join(',')).join('\n');
 
-                <!-- Tab 1: Select -->
-                <div class="tab-content active" id="tab-select">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        <div class="alert-content">
-                            <div class="alert-title">Jak vybrat areály?</div>
-                            <div class="alert-text">Klikněte na "Do Trasy" v popup areálu na mapě. Pořadí můžete změnit přetažením.</div>
-                        </div>
-                    </div>
-                    <div class="route-list" id="routeList">
-                        <p style="color: var(--text-tertiary); text-align: center; padding: 2rem;">Žádné areály v trase</p>
-                    </div>
-                </div>
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `JVS-Export-${Date.now()}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("✅ CSV exportován");
+        }
 
-                <!-- Tab 2: Optimize -->
-                <div class="tab-content" id="tab-optimize">
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
-                        <div class="stat-card">
-                            <div class="stat-label">Celková Vzdálenost</div>
-                            <div class="stat-value" id="totalDistance">0 km</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Odhadovaný Čas</div>
-                            <div class="stat-value" id="estimatedTime">0 h</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Spotřeba Paliva</div>
-                            <div class="stat-value" id="fuelConsumption">0 L</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Počet Areálů</div>
-                            <div class="stat-value" id="arealCount">0</div>
-                        </div>
-                    </div>
-                    
-                    <div class="chart-container">
-                        <h3 class="chart-title">Vizualizace Trasy</h3>
-                        <div id="routeMapPreview" style="height: 400px; border-radius: 0.5rem; overflow: hidden;"></div>
-                    </div>
+        function applyFilters() {
+            renderAll();
+        }
 
-                    <button class="btn btn-primary" id="optimizeRouteBtn" style="width: 100%;">
-                        <i class="fas fa-magic"></i>
-                        Optimalizovat Trasu (AI)
-                    </button>
-                </div>
+        function removeFromRoute(id) {
+            selectedRoute = selectedRoute.filter(r => r.id !== id);
+            updateRouteUI();
+        }
 
-                <!-- Tab 3: Export -->
-                <div class="tab-content" id="tab-export">
-                    <div class="alert alert-success">
-                        <i class="fas fa-check-circle"></i>
-                        <div class="alert-content">
-                            <div class="alert-title">Trasa Připravena!</div>
-                            <div class="alert-text">Vyberte formát exportu pro použití v XRot 95 EVO PRO nebo jiných zařízeních.</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 1rem;">
-                        <button class="btn btn-primary" id="exportGPXBtn">
-                            <i class="fas fa-file-download"></i>
-                            Stáhnout GPX (pro XRot 95 EVO PRO)
-                        </button>
-                        <button class="btn btn-primary" id="exportPDFBtn">
-                            <i class="fas fa-file-pdf"></i>
-                            Stáhnout PDF Report
-                        </button>
-                        <button class="btn btn-primary" id="exportCSVBtn">
-                            <i class="fas fa-file-csv"></i>
-                            Stáhnout CSV
-                        </button>
-                        <button class="btn btn-secondary" id="shareRouteBtn">
-                            <i class="fas fa-share-alt"></i>
-                            Sdílet Trasu (URL)
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Analytics Modal -->
-    <div class="modal" id="analyticsModal">
-        <div class="modal-content" style="width: 1100px;">
-            <div class="modal-header">
-                <h2 class="modal-title">
-                    <i class="fas fa-chart-bar"></i>
-                    Statistiky & Analytics
-                </h2>
-                <button class="modal-close" onclick="closeModal('analyticsModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
-                    <div class="chart-container">
-                        <h3 class="chart-title">Plocha podle Okresu</h3>
-                        <canvas id="districtChart"></canvas>
-                    </div>
-                    <div class="chart-container">
-                        <h3 class="chart-title">Poměr Kategorií</h3>
-                        <canvas id="categoryChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <h3 class="chart-title">Top 10 Největších Areálů</h3>
-                    <canvas id="topArealChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
-    
-    <!-- Data -->
-    <script type="module" src="./data/areals-complete.js"></script>
-    
-    <!-- Main App -->
-    <script type="module" src="./app-premium.js"></script>
+        // Global functions for popup buttons
+        window.editAreal = editAreal;
+        window.markDone = markDone;
+        window.removeFromRoute = removeFromRoute;
+    </script>
 </body>
 </html>
