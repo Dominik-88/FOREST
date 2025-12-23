@@ -1,0 +1,64 @@
+{
+  "app": {
+    "name": "JVS Ultimate PRO",
+    "shortName": "JVS PRO",
+    "version": "2.0.0",
+    "description": "AI-powered vodárenský management systém"
+  },
+  "map": {
+    "defaultCenter": [49.15, 14.35],
+    "defaultZoom": 10,
+    "minZoom": 8,
+    "maxZoom": 18,
+    "clusterRadius": 40
+  },
+  "routing": {
+    "avgSpeed": 50,
+    "roadCoefficient": 1.3,
+    "maintenanceTime": 30
+  },
+  "storage": {
+    "key": "jvs_ultimate_v2",
+    "maintenanceDays": 7
+  },
+  "ui": {
+    "theme": {
+      "light": {
+        "primary": "#0055ff",
+        "primaryDark": "#0044cc",
+        "accent": "#7c3aed",
+        "success": "#10b981",
+        "danger": "#ef4444",
+        "warning": "#f59e0b"
+      },
+      "dark": {
+        "primary": "#4c8cff",
+        "primaryDark": "#3a7ae8",
+        "accent": "#a855f7",
+        "success": "#34d399",
+        "danger": "#f87171",
+        "warning": "#fbbf24"
+      }
+    }
+  },
+  "okresy": [
+    { "code": "CB", "name": "České Budějovice" },
+    { "code": "TA", "name": "Tábor" },
+    { "code": "CK", "name": "Český Krumlov" },
+    { "code": "PT", "name": "Prachatice" },
+    { "code": "PI", "name": "Písek" },
+    { "code": "ST", "name": "Strakonice" }
+  ],
+  "kategorie": [
+    { "code": "I.", "name": "Kategorie I (Vysoká)", "color": "#ef4444" },
+    { "code": "II.", "name": "Kategorie II (Střední)", "color": "#f59e0b" },
+    { "code": "none", "name": "Bez kategorie", "color": "#64748b" }
+  ],
+  "seo": {
+    "title": "JVS Ultimate PRO | AI Management System",
+    "description": "Profesionální správa vodárenských areálů s AI asistentem, GPS navigací a pokročilou analytikou",
+    "keywords": "vodárny, management, AI, GPS, routing, optimalizace",
+    "author": "Dominik Schmied",
+    "ogImage": "https://dominik-88.github.io/FOREST/og-image.png"
+  }
+}
