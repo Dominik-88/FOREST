@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dominik-88.github.io/FOREST/sitemap.xml
+
+# Disallow admin/config files
+Disallow: /config.json
+Disallow: /firebase-config.js
+Disallow: /*.rules
+
+# Allow important pages
+Allow: /jvs-ultimate-pro.html
+Allow: /data/areals.json
+Allow: /manifest.json
