@@ -8,13 +8,6 @@
     
     <title>JVS Management System</title>
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="./manifest.json">
-    
-    <!-- Icons -->
-    <link rel="icon" type="image/png" href="./assets/icon-192.png">
-    <link rel="apple-touch-icon" href="./assets/icon-512.png">
-    
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
@@ -31,27 +24,18 @@
             box-sizing: border-box;
         }
         
-        :root {
-            --vh: 1vh;
-        }
-        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             overflow: hidden;
             background: #f8f9fa;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
         
-        /* App Container */
         .app-container {
             display: flex;
             height: 100vh;
-            height: calc(var(--vh, 1vh) * 100);
             width: 100vw;
         }
         
-        /* Sidebar */
         .sidebar {
             width: 350px;
             background: white;
@@ -59,7 +43,6 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            transition: transform 0.3s ease;
         }
         
         .sidebar-header {
@@ -78,11 +61,9 @@
             opacity: 0.9;
         }
         
-        /* Tabs */
         .sidebar-tabs {
             display: flex;
             border-bottom: 1px solid #e0e0e0;
-            background: white;
         }
         
         .sidebar-tab {
@@ -95,7 +76,6 @@
             font-size: 14px;
             color: #666;
             transition: all 0.2s;
-            min-height: 44px;
         }
         
         .sidebar-tab.active {
@@ -106,13 +86,34 @@
         .sidebar-content {
             flex: 1;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
             padding: 16px;
         }
         
-        /* Filters Section */
-        .filters-section {
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
             margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a1a;
         }
         
         .filter-group {
@@ -134,21 +135,6 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
-            transition: border-color 0.2s;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        
-        .filter-select:focus,
-        .filter-input:focus {
-            outline: none;
-            border-color: #007bff;
-        }
-        
-        .filter-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 16px;
         }
         
         .btn {
@@ -159,16 +145,6 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
-            min-height: 44px;
-        }
-        
-        .btn-primary {
-            background: #007bff;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #0056b3;
         }
         
         .btn-secondary {
@@ -176,55 +152,15 @@
             color: white;
         }
         
-        .btn-secondary:hover {
-            background: #545b62;
-        }
-        
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-card {
-            background: #f8f9fa;
-            padding: 16px;
-            border-radius: 12px;
-            border: 1px solid #e0e0e0;
-        }
-        
-        .stat-label {
-            font-size: 11px;
-            color: #666;
-            margin-bottom: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .stat-value {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1a1a1a;
-        }
-        
-        /* AI Chat */
         .ai-chat {
             display: flex;
             flex-direction: column;
-            height: 100%;
+            height: calc(100vh - 200px);
         }
         
         .ai-chat-messages {
             flex: 1;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
             padding: 16px;
             display: flex;
             flex-direction: column;
@@ -243,14 +179,12 @@
             align-self: flex-end;
             background: #007bff;
             color: white;
-            border-bottom-right-radius: 4px;
         }
         
         .chat-message-assistant {
             align-self: flex-start;
             background: #f1f3f5;
             color: #1a1a1a;
-            border-bottom-left-radius: 4px;
         }
         
         .typing-dots {
@@ -264,14 +198,6 @@
             background: #999;
             border-radius: 50%;
             animation: typing 1.4s infinite;
-        }
-        
-        .typing-dots span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-        
-        .typing-dots span:nth-child(3) {
-            animation-delay: 0.4s;
         }
         
         @keyframes typing {
@@ -302,12 +228,8 @@
             background: #007bff;
             color: white;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
         
-        /* Map Container */
         .map-container {
             flex: 1;
             position: relative;
@@ -316,11 +238,8 @@
         #map {
             width: 100%;
             height: 100%;
-            -webkit-transform: translateZ(0);
-            transform: translateZ(0);
         }
         
-        /* Loader */
         #app-loader {
             position: fixed;
             top: 0;
@@ -355,7 +274,6 @@
             color: #666;
         }
         
-        /* Mobile Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
@@ -364,6 +282,7 @@
                 bottom: 0;
                 z-index: 1000;
                 transform: translateX(-100%);
+                transition: transform 0.3s;
             }
             
             .sidebar.open {
@@ -382,15 +301,6 @@
                 border: none;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.15);
                 cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-        }
-        
-        @media (min-width: 769px) {
-            .mobile-menu-btn {
-                display: none;
             }
         }
     </style>
@@ -403,7 +313,7 @@
     </div>
     
     <!-- Mobile Menu Button -->
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+    <button class="mobile-menu-btn" onclick="toggleSidebar()" style="display: none;">
         <i class="fas fa-bars"></i>
     </button>
     
@@ -411,13 +321,11 @@
     <div class="app-container">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
-            <!-- Header -->
             <div class="sidebar-header">
                 <h1>JVS Management</h1>
                 <p>Správa vodárenských areálů</p>
             </div>
             
-            <!-- Tabs -->
             <div class="sidebar-tabs">
                 <button class="sidebar-tab active" onclick="switchTab('filters')">
                     <i class="fas fa-filter"></i> Filtry
@@ -427,11 +335,9 @@
                 </button>
             </div>
             
-            <!-- Content -->
             <div class="sidebar-content">
                 <!-- Filters Tab -->
                 <div id="tab-filters" class="tab-content">
-                    <!-- Stats -->
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-label">Celkem</div>
@@ -451,7 +357,6 @@
                         </div>
                     </div>
                     
-                    <!-- Filters -->
                     <div class="filters-section">
                         <div class="filter-group">
                             <label class="filter-label">Vyhledávání</label>
@@ -501,29 +406,22 @@
                             </select>
                         </div>
                         
-                        <div class="filter-actions">
-                            <button id="filter-reset" class="btn btn-secondary" style="flex: 1;">
-                                <i class="fas fa-redo"></i> Reset
-                            </button>
-                        </div>
+                        <button id="filter-reset" class="btn btn-secondary" style="width: 100%;">
+                            <i class="fas fa-redo"></i> Reset filtrů
+                        </button>
                     </div>
                 </div>
                 
                 <!-- AI Tab -->
-                <div id="tab-ai" class="tab-content" style="display: none; height: calc(100vh - 200px);">
+                <div id="tab-ai" class="tab-content" style="display: none;">
                     <div class="ai-chat">
                         <div class="ai-chat-messages" id="ai-chat-messages">
                             <div class="chat-message chat-message-assistant">
-                                <div class="message-content">
-                                    👋 Ahoj! Jsem AI asistent JVS Management. Mohu ti pomoci s:
-                                    <br><br>
-                                    🔍 Filtrováním areálů<br>
-                                    📊 Statistikami<br>
-                                    🔮 Predikcí údržby<br>
-                                    📝 Generováním protokolů
-                                    <br><br>
-                                    Zkus se mě na něco zeptat!
-                                </div>
+                                👋 Ahoj! Jsem AI asistent. Mohu ti pomoci s:<br><br>
+                                🔍 Filtrováním areálů<br>
+                                📊 Statistikami<br>
+                                🔮 Predikcí údržby<br><br>
+                                Zkus se mě na něco zeptat!
                             </div>
                         </div>
                         <div class="ai-chat-input">
@@ -543,7 +441,7 @@
         </main>
     </div>
     
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -552,11 +450,11 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     
-    <!-- Firebase Config -->
+    <!-- Firebase Config (must load before app) -->
     <script src="./firebase-config.js"></script>
     
     <!-- App Script -->
-    <script type="module" src="./app-enhanced.js"></script>
+    <script type="module" src="./app-simple.js"></script>
     
     <!-- Utility Functions -->
     <script>
@@ -565,17 +463,20 @@
         }
         
         function switchTab(tab) {
-            // Update tab buttons
             document.querySelectorAll('.sidebar-tab').forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.closest('.sidebar-tab').classList.add('active');
             
-            // Update tab content
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.style.display = 'none';
             });
             document.getElementById(`tab-${tab}`).style.display = 'block';
+        }
+        
+        // Show mobile menu button on small screens
+        if (window.innerWidth <= 768) {
+            document.querySelector('.mobile-menu-btn').style.display = 'flex';
         }
     </script>
 </body>
