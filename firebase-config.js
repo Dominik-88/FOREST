@@ -1,16 +1,10 @@
 /**
  * Firebase Configuration
  * Centralized Firebase setup for JVS Management System
+ * Using Firebase Compat SDK for browser compatibility
  */
 
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDjznwuPhwYVhM8eg8HV0TZmquzq8BZTCw",
   authDomain: "jvs-management.firebaseapp.com",
@@ -21,12 +15,30 @@ const firebaseConfig = {
   measurementId: "G-ZR4GGRHVBQ"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// Initialize Firebase (compat version)
+console.log('[Firebase] Initializing Firebase...');
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+console.log('[Firebase] Firebase initialized successfully');
+console.log('[Firebase] Firestore instance created');
+
+// Enable offline persistence
+db.enablePersistence({ synchronizeTabs: true })
+    .then(() => {
+        console.log('[Firebase] Offline persistence enabled');
+    })
+    .catch((err) => {
+        if (err.code === 'failed-precondition') {
+            console.warn('[Firebase] Persistence failed: Multiple tabs open');
+        } else if (err.code === 'unimplemented') {
+            console.warn('[Firebase] Persistence not available in this browser');
+        }
+    });
 
 // Firestore Collections
-export const COLLECTIONS = {
+window.COLLECTIONS = {
     AREALS: 'areals',
     USERS: 'users',
     ROUTES: 'routes',
@@ -34,17 +46,12 @@ export const COLLECTIONS = {
     AI_HISTORY: 'ai_query_history'
 };
 
-// Firestore Indexes (for complex queries)
-export const REQUIRED_INDEXES = [
-    {
-        collection: 'areals',
-        fields: ['district', 'category', 'last_maintenance']
-    },
-    {
-        collection: 'areals',
-        fields: ['is_completed', 'area_sqm']
-    }
-];
+// Export for global access
+window.firebaseApp = app;
+window.firebaseDb = db;
+window.firebaseAuth = auth;
+
+console.log('[Firebase] Global instances exported');
 
 /**
  * SETUP INSTRUCTIONS:
@@ -70,5 +77,12 @@ export const REQUIRED_INDEXES = [
  *    - Deploy via Firebase Console or CLI
  * 
  * 5. Run Migration:
- *    - node scripts/migrate-to-firestore.js
+ *    - cd scripts
+ *    - npm install firebase
+ *    - node migrate-to-firestore.js
+ * 
+ * 6. Verify Data:
+ *    - Open Firebase Console
+ *    - Navigate to Firestore Database
+ *    - Check that 'areals' collection has 41 documents
  */
