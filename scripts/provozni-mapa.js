@@ -1,9 +1,19 @@
 /**
- * JVS Provozní Mapa v6.1
- * Clean, Simple, 100% Functional + Google Maps Integration
+ * JVS Provozní Mapa v7.0
+ * Firebase Integration + Google Maps + Real-time Sync
  */
 
-console.log('🚀 JVS Provozní Mapa v6.1 starting...');
+console.log('🚀 JVS Provozní Mapa v7.0 starting...');
+
+// Import Firebase functions
+import { 
+    initAuth, 
+    saveAreaStatus, 
+    loadAllAreasStatus, 
+    subscribeToAllAreasUpdates,
+    initializeAllAreas,
+    logEvent 
+} from './firebase-config.js';
 
 // =============================================
 // DATA - 41 AREÁLŮ
@@ -58,6 +68,7 @@ const areas = [
 let map = null;
 let clusterGroup = null;
 let filteredAreas = [...areas];
+let realtimeUnsubscribe = null;
 
 // =============================================
 // UTILITY FUNCTIONS
@@ -94,6 +105,87 @@ function openInGoogleMaps(lat, lng, name) {
     const url = getGoogleMapsUrl(lat, lng);
     window.open(url, '_blank');
     showToast(`Otevírám ${name} v Google Maps`, 'success');
+    logEvent('open_google_maps', { area_name: name, lat, lng });
+}
+
+// =============================================
+// FIREBASE FUNCTIONS
+// =============================================
+
+async function toggleMaintenance(areaId) {
+    const area = areas.find(a => a.id === areaId);
+    if (!area) return;
+    
+    // Toggle local state
+    area.is_maintained = !area.is_maintained;
+    
+    // Save to Firebase
+    const success = await saveAreaStatus(areaId, area.is_maintained);
+    
+    if (success) {
+        applyFilters();
+        showToast(
+            `${area.name}: ${area.is_maintained ? 'Hotovo' : 'K údržbě'}`,
+            area.is_maintained ? 'success' : 'warning'
+        );
+        
+        // Log analytics event
+        logEvent('toggle_maintenance', {
+            area_id: areaId,
+            area_name: area.name,
+            is_maintained: area.is_maintained
+        });
+    } else {
+        // Revert on error
+        area.is_maintained = !area.is_maintained;
+        showToast('Chyba při ukládání', 'danger');
+    }
+}
+
+async function loadFirebaseData() {
+    try {
+        console.log('🔄 Loading data from Firebase...');
+        const statuses = await loadAllAreasStatus();
+        
+        // Update local areas with Firebase data
+        Object.keys(statuses).forEach(areaId => {
+            const area = areas.find(a => a.id === parseInt(areaId));
+            if (area) {
+                area.is_maintained = statuses[areaId];
+            }
+        });
+        
+        console.log(`✅ Loaded ${Object.keys(statuses).length} areas from Firebase`);
+        applyFilters();
+    } catch (error) {
+        console.error('❌ Error loading Firebase data:', error);
+        showToast('Chyba při načítání dat', 'danger');
+    }
+}
+
+function setupRealtimeSync() {
+    // Unsubscribe from previous listener
+    if (realtimeUnsubscribe) {
+        realtimeUnsubscribe();
+    }
+    
+    // Subscribe to real-time updates
+    realtimeUnsubscribe = subscribeToAllAreasUpdates((statuses) => {
+        console.log('🔄 Real-time update received');
+        
+        // Update local areas
+        Object.keys(statuses).forEach(areaId => {
+            const area = areas.find(a => a.id === parseInt(areaId));
+            if (area && area.is_maintained !== statuses[areaId]) {
+                area.is_maintained = statuses[areaId];
+                console.log(`🔄 Updated area ${areaId}: ${statuses[areaId]}`);
+            }
+        });
+        
+        applyFilters();
+    });
+    
+    console.log('✅ Real-time sync enabled');
 }
 
 // =============================================
@@ -187,18 +279,6 @@ function renderMarkers() {
     updateStats();
 }
 
-function toggleMaintenance(areaId) {
-    const area = areas.find(a => a.id === areaId);
-    if (area) {
-        area.is_maintained = !area.is_maintained;
-        applyFilters();
-        showToast(
-            `${area.name}: ${area.is_maintained ? 'Hotovo' : 'K údržbě'}`,
-            area.is_maintained ? 'success' : 'warning'
-        );
-    }
-}
-
 // =============================================
 // FILTERS
 // =============================================
@@ -274,6 +354,7 @@ function setupEventListeners() {
                 pos => {
                     map.setView([pos.coords.latitude, pos.coords.longitude], 13);
                     showToast('Vaše poloha nalezena', 'success');
+                    logEvent('use_geolocation');
                 },
                 () => showToast('Geolokace selhala', 'danger')
             );
@@ -287,6 +368,7 @@ function setupEventListeners() {
     
     function togglePanel() {
         panel.classList.toggle('open');
+        logEvent('toggle_panel', { is_open: panel.classList.contains('open') });
     }
     
     panelHandle.addEventListener('click', togglePanel);
@@ -316,14 +398,29 @@ function populateDistricts() {
     console.log(`✅ Populated ${districts.length} districts`);
 }
 
-function init() {
+async function init() {
     console.log('🎯 Initializing app...');
     
     try {
+        // Initialize Firebase
+        showToast('Připojování k Firebase...', 'success');
+        await initAuth();
+        showToast('Firebase připojeno', 'success');
+        
+        // Initialize map
         initMap();
         populateDistricts();
         setupEventListeners();
         updateWeather();
+        
+        // Load Firebase data
+        await loadFirebaseData();
+        
+        // Setup real-time sync
+        setupRealtimeSync();
+        
+        // Log app start
+        logEvent('app_start', { areas_count: areas.length });
         
         showToast('Aplikace načtena - 41 areálů', 'success');
         console.log('✅ App initialized successfully');
@@ -331,6 +428,13 @@ function init() {
     } catch (error) {
         console.error('❌ Initialization error:', error);
         showToast('Chyba při načítání', 'danger');
+        
+        // Fallback: continue without Firebase
+        console.log('⚠️ Continuing without Firebase...');
+        initMap();
+        populateDistricts();
+        setupEventListeners();
+        updateWeather();
     }
 }
 
@@ -341,4 +445,11 @@ if (document.readyState === 'loading') {
     init();
 }
 
-console.log('✅ JVS Provozní Mapa v6.1 loaded');
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    if (realtimeUnsubscribe) {
+        realtimeUnsubscribe();
+    }
+});
+
+console.log('✅ JVS Provozní Mapa v7.0 loaded');
