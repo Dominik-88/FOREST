@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JVS Debug Test</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #0f172a; color: white; }
+        #map { position: absolute; top: 60px; left: 0; right: 0; bottom: 300px; }
+        #controls { position: absolute; bottom: 0; left: 0; right: 0; height: 300px; background: #1e293b; padding: 20px; overflow-y: auto; }
+        #header { position: absolute; top: 0; left: 0; right: 0; height: 60px; background: #1e293b; padding: 15px; display: flex; align-items: center; justify-content: space-between; }
+        input, select { padding: 10px; margin: 5px 0; width: 100%; background: #334155; border: 1px solid #475569; color: white; border-radius: 5px; }
+        button { padding: 10px 20px; margin: 5px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #2563eb; }
+        #log { background: #000; padding: 10px; margin-top: 10px; max-height: 100px; overflow-y: auto; font-size: 12px; font-family: monospace; }
+        .stat { display: inline-block; margin: 0 15px; }
+    </style>
+</head>
+<body>
+
+<div id="header">
+    <h1>🗺️ JVS Debug Test</h1>
+    <div>
+        <span class="stat">Celkem: <strong id="totalCount">0</strong></span>
+        <span class="stat">K údržbě: <strong id="remainingCount">0</strong></span>
+    </div>
+</div>
+
+<div id="map"></div>
+
+<div id="controls">
+    <h3>🔍 Filtry</h3>
+    <input type="text" id="searchInput" placeholder="Hledat název...">
+    <select id="districtFilter">
+        <option value="">Všechny okresy</option>
+    </select>
+    <label>
+        <input type="checkbox" id="maintainedToggle"> Jen k údržbě
+    </label>
+    
+    <button onclick="testFilters()">🧪 Test Filtry</button>
+    <button onclick="testMarkers()">📍 Test Markery</button>
+    <button onclick="clearLog()">🗑️ Vymazat Log</button>
+    
+    <div id="log"></div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+<script>
+console.log('🚀 JVS Debug Test starting...');
+
+// Test data - 5 areálů
+const testAreas = [
+    {id: 1, name:"VDJ Amerika II", district:"PI", lat:49.305131, lng:14.166126, area:3303, fence:293, cat:"I.", is_maintained:false},
+    {id: 2, name:"VDJ Drahonice", district:"ST", lat:49.202902, lng:14.063713, area:5953, fence:376, cat:"I.", is_maintained:false},
+    {id: 3, name:"VDJ Vodňany", district:"ST", lat:49.164550, lng:14.177836, area:1594, fence:252, cat:"I.", is_maintained:true},
+    {id: 4, name:"VDJ Hlavatce", district:"CB", lat:49.063584, lng:14.267751, area:7968, fence:424, cat:"B", is_maintained:false},
+    {id: 5, name:"VDJ Šibeniční vrch I", district:"PT", lat:49.025083, lng:13.994111, area:1835, fence:245, cat:"I.", is_maintained:false}
+];
+
+const app = {
+    map: null,
+    clusterGroup: null,
+    areas: [...testAreas],
+    filteredAreas: [...testAreas]
+};
+
+function log(message) {
+    const logDiv = document.getElementById('log');
+    const time = new Date().toLocaleTimeString();
+    logDiv.innerHTML += `[${time}] ${message}<br>`;
+    logDiv.scrollTop = logDiv.scrollHeight;
+    console.log(message);
+}
+
+function clearLog() {
+    document.getElementById('log').innerHTML = '';
+}
+
+function updateStats() {
+    const total = app.filteredAreas.length;
+    const remaining = app.filteredAreas.filter(a => !a.is_maintained).length;
+    
+    document.getElementById('totalCount').textContent = total;
+    document.getElementById('remainingCount').textContent = remaining;
+    
+    log(`📊 Stats: ${total} celkem, ${remaining} k údržbě`);
+}
+
+function initMap() {
+    log('📍 Initializing map...');
+    
+    app.map = L.map('map').setView([49.15, 14.15], 10);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(app.map);
+    
+    app.clusterGroup = L.markerClusterGroup({
+        maxClusterRadius: 50
+    });
+    
+    app.map.addLayer(app.clusterGroup);
+    
+    log('✅ Map initialized');
+    renderMarkers();
+}
+
+function renderMarkers() {
+    log(`📌 Rendering ${app.filteredAreas.length} markers...`);
+    
+    app.clusterGroup.clearLayers();
+    
+    app.filteredAreas.forEach(area => {
+        const color = area.is_maintained ? '#10b981' : '#f59e0b';
+        
+        const marker = L.circleMarker([area.lat, area.lng], {
+            radius: 8,
+            fillColor: color,
+            color: '#fff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        });
+        
+        marker.bindPopup(`
+            <div style="color: black;">
+                <h3><strong>${area.name}</strong></h3>
+                <p>Okres: ${area.district}</p>
+                <p>Kategorie: ${area.cat}</p>
+                <p>Plocha: ${area.area} m²</p>
+                <p>Oplocení: ${area.fence} bm</p>
+                <p>Status: ${area.is_maintained ? '✓ Hotovo' : '⚠ K údržbě'}</p>
+            </div>
+        `);
+        
+        app.clusterGroup.addLayer(marker);
+    });
+    
+    log(`✅ Rendered ${app.filteredAreas.length} markers`);
+    updateStats();
+}
+
+function applyFilters() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const district = document.getElementById('districtFilter').value;
+    const onlyRemaining = document.getElementById('maintainedToggle').checked;
+    
+    log(`🔍 Applying filters: search="${search}", district="${district}", onlyRemaining=${onlyRemaining}`);
+    
+    app.filteredAreas = app.areas.filter(area => {
+        const matchesSearch = area.name.toLowerCase().includes(search);
+        const matchesDistrict = !district || area.district === district;
+        const matchesMaintenance = !onlyRemaining || !area.is_maintained;
+        
+        const matches = matchesSearch && matchesDistrict && matchesMaintenance;
+        
+        if (!matches) {
+            log(`  ❌ ${area.name}: search=${matchesSearch}, district=${matchesDistrict}, maintenance=${matchesMaintenance}`);
+        }
+        
+        return matches;
+    });
+    
+    log(`✅ Filtered: ${app.filteredAreas.length} / ${app.areas.length} areas`);
+    renderMarkers();
+}
+
+function populateDistricts() {
+    const select = document.getElementById('districtFilter');
+    const districts = [...new Set(app.areas.map(a => a.district))].sort();
+    
+    districts.forEach(district => {
+        const option = document.createElement('option');
+        option.value = district;
+        option.textContent = district;
+        select.appendChild(option);
+    });
+    
+    log(`✅ Populated ${districts.length} districts: ${districts.join(', ')}`);
+}
+
+function setupEventListeners() {
+    log('🎧 Setting up event listeners...');
+    
+    document.getElementById('searchInput').addEventListener('input', () => {
+        log('🔍 Search input changed');
+        applyFilters();
+    });
+    
+    document.getElementById('districtFilter').addEventListener('change', () => {
+        log('🔍 District filter changed');
+        applyFilters();
+    });
+    
+    document.getElementById('maintainedToggle').addEventListener('change', () => {
+        log('🔍 Maintenance toggle changed');
+        applyFilters();
+    });
+    
+    log('✅ Event listeners set up');
+}
+
+function testFilters() {
+    log('🧪 Testing filters...');
+    
+    // Test 1: Search
+    document.getElementById('searchInput').value = 'Amerika';
+    applyFilters();
+    
+    setTimeout(() => {
+        // Test 2: District
+        document.getElementById('searchInput').value = '';
+        document.getElementById('districtFilter').value = 'ST';
+        applyFilters();
+        
+        setTimeout(() => {
+            // Test 3: Maintenance
+            document.getElementById('districtFilter').value = '';
+            document.getElementById('maintainedToggle').checked = true;
+            applyFilters();
+            
+            setTimeout(() => {
+                // Reset
+                document.getElementById('maintainedToggle').checked = false;
+                applyFilters();
+                log('✅ Filter tests complete');
+            }, 1000);
+        }, 1000);
+    }, 1000);
+}
+
+function testMarkers() {
+    log('📍 Testing markers...');
+    log(`Total areas: ${app.areas.length}`);
+    log(`Filtered areas: ${app.filteredAreas.length}`);
+    log(`Cluster layers: ${app.clusterGroup.getLayers().length}`);
+    
+    app.filteredAreas.forEach((area, i) => {
+        log(`  ${i+1}. ${area.name} (${area.district}) - ${area.is_maintained ? 'Hotovo' : 'K údržbě'}`);
+    });
+}
+
+// Initialize
+window.addEventListener('load', () => {
+    log('🎯 Initializing app...');
+    initMap();
+    populateDistricts();
+    setupEventListeners();
+    log('✅ App initialized successfully');
+});
+</script>
+
+</body>
+</html>
