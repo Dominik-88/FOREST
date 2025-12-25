@@ -206,7 +206,7 @@
         
         .leaflet-popup-content {
             margin: 0;
-            min-width: 250px;
+            min-width: 280px;
         }
         
         .popup-content {
@@ -227,13 +227,14 @@
         }
         
         .popup-btn {
-            width: 100%;
+            flex: 1;
             padding: 12px;
             border: none;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
+            font-size: 14px;
         }
         
         .popup-btn.maintained {
@@ -246,8 +247,14 @@
             color: white;
         }
         
+        .popup-btn.maps-btn {
+            background: #3b82f6;
+            color: white;
+        }
+        
         .popup-btn:hover {
             opacity: 0.9;
+            transform: translateY(-1px);
         }
         
         /* Toast */
