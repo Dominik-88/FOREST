@@ -6,7 +6,17 @@
     <meta name="theme-color" content="#2563eb">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="JVS Mapa">
+    <meta name="description" content="Provozní mapa vodárenských areálů s Firebase integrací">
+    <meta name="author" content="Dominik Schmied">
+    
     <title>JVS Provozní mapa</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%232563eb'/%3E%3Cpath d='M96 40c-20 0-36 16-36 36 0 27 36 76 36 76s36-49 36-76c0-20-16-36-36-36zm0 48c-6.6 0-12-5.4-12-12s5.4-12 12-12 12 5.4 12 12-5.4 12-12 12z' fill='white'/%3E%3C/svg%3E">
 
     <!-- Leaflet & Extensions -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -347,6 +357,21 @@
 
 <!-- Main App Script -->
 <script src="scripts/provozni-mapa.js"></script>
+
+<!-- Service Worker Registration -->
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('✅ Service Worker registered:', registration.scope);
+                })
+                .catch(error => {
+                    console.warn('❌ Service Worker registration failed:', error);
+                });
+        });
+    }
+</script>
 
 </body>
 </html>
