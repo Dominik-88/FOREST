@@ -1,12 +1,6 @@
-# 🗺️ JVS FOREST v5.0 - Provozní Mapa
+# 🗺️ JVS Provozní Mapa
 
-**100% Funkční aplikace pro správu vodárenských areálů**
-
-[![Status](https://img.shields.io/badge/status-production%20ready-success)](https://dominik-88.github.io/FOREST/)
-[![Version](https://img.shields.io/badge/version-5.0.0-blue)](https://github.com/Dominik-88/FOREST)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-
----
+Interaktivní mapa vodárenských areálů pro správu a údržbu.
 
 ## 🚀 Live Demo
 
@@ -14,325 +8,250 @@
 
 ---
 
-## ✨ Features
+## ✨ Funkce
 
-### 🗺️ Interaktivní Mapa
-- **41 vodárenských areálů** s kompletními daty
-- **Leaflet** s OpenStreetMap tiles
-- **Clustering** pro přehledné zobrazení
-- **Barevné markery** (zelená = hotovo, oranžová = k údržbě)
-- **Detailní popupy** s informacemi o každém areálu
+### 📍 Mapa
+- **41 vodárenských areálů** v okresech PI, ST, CB, CK, PT, TA
+- **Interaktivní markery** - kliknutím zobrazíte detail
+- **Clustering** - automatické seskupování při oddálení
+- **Barevné rozlišení** - zelená (hotovo), oranžová (k údržbě)
 
-### 🔍 Filtry & Vyhledávání
+### 🔍 Filtry
 - **Vyhledávání** podle názvu areálu
 - **Filtr podle okresu** (PI, ST, CB, CK, PT, TA)
 - **Toggle údržby** - zobrazit jen areály k údržbě
-- **Real-time aktualizace** statistik
 
 ### 📊 Statistiky
-- **Celkový počet** areálů
-- **Počet k údržbě** - dynamicky aktualizováno
-- **Celková plocha** - součet všech ploch (m²)
-- **Celkové oplocení** - součet všech oploceních (bm)
+- Celkový počet areálů
+- Počet areálů k údržbě
+- Celková plocha (m²)
+- Celkové oplocení (bm)
 
-### ☁️ Počasí
-- **Real-time počasí** v centru mapy
-- **Open-Meteo API** - teplota, srážky, vítr, oblačnost
-- **Automatická aktualizace** při pohybu mapy
+### 🌤️ Počasí
+- Real-time počasí v centru mapy
+- Teplota, srážky, vítr
+- Automatická aktualizace při pohybu mapy
 
-### 📱 PWA (Progressive Web App)
-- **Instalovatelná** na home screen
-- **Offline podpora** přes Service Worker
-- **Rychlé načítání** díky cache
+### 📱 Další funkce
+- **Geolokace** - najít moji polohu
 - **Responzivní design** - funguje na mobilu i PC
+- **Toast notifikace** - vizuální zpětná vazba
+- **Skládací panel** - přehledné ovládání
 
 ---
 
 ## 🛠️ Technologie
 
-### Frontend
-- **HTML5** - Sémantická struktura
-- **Tailwind CSS** - Utility-first styling
-- **JavaScript ES6+** - Moderní syntax
-- **Leaflet 1.9.4** - Mapová knihovna
-
-### Leaflet Pluginy
-- **MarkerCluster** - Seskupování markerů
-- **Routing Machine** - Navigace (připraveno)
-- **Draw** - Kreslení na mapě (připraveno)
-- **Heat** - Heatmapa (připraveno)
-- **GeometryUtil** - Geometrické výpočty
-
-### APIs
-- **Open-Meteo** - Weather API
-- **OpenStreetMap** - Map tiles
-- **Firebase** - Backend (volitelné)
-
-### PWA
-- **Service Worker** - Offline cache
-- **Web Manifest** - Instalace
-- **Icons** - PWA ikony
+- **Frontend:** HTML5, CSS3, JavaScript ES6+
+- **Mapa:** Leaflet 1.9.4 + MarkerCluster
+- **API:** Open-Meteo (počasí), OpenStreetMap (tiles)
+- **Hosting:** GitHub Pages
 
 ---
 
-## 📁 Struktura Projektu
+## 📁 Struktura projektu
 
 ```
 FOREST/
-├── index.html                  # Hlavní HTML soubor
-├── manifest.json               # PWA manifest
-├── sw.js                       # Service Worker
-├── test.html                   # Testovací stránka
-├── offline.html                # Offline fallback
+├── index.html              # Hlavní HTML soubor
 ├── scripts/
-│   └── provozni-mapa.js        # Hlavní aplikační logika
-├── data/
-│   └── areas.json              # Data areálů (backup)
-└── docs/
-    ├── COMPLETE-FIX-V5.md      # Kompletní dokumentace oprav
-    ├── README.md               # Tento soubor
-    └── ...                     # Další dokumentace
+│   └── provozni-mapa.js   # Hlavní JavaScript aplikace
+├── manifest.json          # PWA manifest
+├── sw.js                  # Service Worker
+├── offline.html           # Offline stránka
+├── robots.txt             # SEO
+├── sitemap.xml            # SEO
+└── README.md              # Dokumentace
 ```
 
 ---
 
-## 🚀 Instalace & Spuštění
+## 🚀 Instalace a spuštění
 
-### 1. Klonování repozitáře
+### Lokální vývoj
+
+1. **Klonujte repozitář:**
 ```bash
 git clone https://github.com/Dominik-88/FOREST.git
 cd FOREST
 ```
 
-### 2. Lokální server
+2. **Spusťte lokální server:**
 ```bash
 # Python 3
 python -m http.server 8000
 
+# Python 2
+python -m SimpleHTTPServer 8000
+
 # Node.js
 npx http-server
-
-# PHP
-php -S localhost:8000
 ```
 
-### 3. Otevřete v prohlížeči
+3. **Otevřete v prohlížeči:**
 ```
 http://localhost:8000
 ```
 
+### Deployment na GitHub Pages
+
+1. **Push do main branch:**
+```bash
+git add .
+git commit -m "Update"
+git push origin main
+```
+
+2. **GitHub Pages se automaticky aktualizuje**
+   - URL: `https://[username].github.io/FOREST/`
+
 ---
 
-## 📱 Použití
+## 📖 Použití
 
 ### Základní ovládání
-1. **Zoom** - Kolečko myši nebo +/- tlačítka
-2. **Pan** - Tažení myší
-3. **Marker** - Kliknutí zobrazí popup s detaily
-4. **Cluster** - Kliknutí rozbalí seskupené markery
 
-### Filtry
-1. **Vyhledávání** - Zadejte název areálu
-2. **Okres** - Vyberte okres z dropdown menu
-3. **Údržba** - Zaškrtněte pro zobrazení jen areálů k údržbě
+1. **Zobrazení detailu areálu:**
+   - Klikněte na marker na mapě
+   - Zobrazí se popup s informacemi
 
-### Funkce
-- **📍 Geolokace** - Tlačítko s crosshairs najde vaši polohu
-- **📊 Statistiky** - Bottom panel zobrazuje aktuální statistiky
-- **☁️ Počasí** - Automaticky se aktualizuje při pohybu mapy
-- **✓ Údržba** - Kliknutím na tlačítko v popupu změníte stav
+2. **Změna stavu údržby:**
+   - V popupu klikněte na tlačítko "K údržbě" / "Hotovo"
+   - Barva markeru se změní
 
----
+3. **Filtrování:**
+   - Otevřete panel (tlačítko vpravo nahoře)
+   - Použijte vyhledávání, filtr okresu nebo toggle údržby
 
-## 🔧 Konfigurace
+4. **Geolokace:**
+   - Klikněte na tlačítko s ikonou lokace
+   - Mapa se přesune na vaši polohu
 
-### Firebase (volitelné)
-Pro aktivaci Firebase integrace:
+### Klávesové zkratky
 
-1. Vytvořte Firebase projekt
-2. Přidejte konfiguraci do `index.html`:
-```javascript
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  // ...
-};
-```
-
-### Vlastní data
-Pro použití vlastních dat upravte `initialAreas` v `scripts/provozni-mapa.js`:
-```javascript
-const initialAreas = [
-  {
-    id: 1,
-    name: "Název areálu",
-    district: "Okres",
-    lat: 49.123456,
-    lng: 14.123456,
-    area: 1000,        // m²
-    fence: 100,        // bm
-    cat: "I.",         // Kategorie
-    last_maintenance: "2025-01-01",
-    is_maintained: false
-  },
-  // ...
-];
-```
+- **Esc** - Zavřít popup
+- **+/-** - Přiblížit/oddálit mapu
+- **Šipky** - Posun mapy
 
 ---
 
-## 🎨 Customizace
+## 🎨 Kategorie areálů
 
-### Barvy
-Upravte Tailwind config v `index.html`:
-```javascript
-tailwind.config = {
-  theme: {
-    extend: {
-      colors: {
-        primary: '#3b82f6',    // Modrá
-        success: '#10b981',    // Zelená
-        warning: '#f59e0b',    // Oranžová
-        danger: '#ef4444',     // Červená
-        background: '#0f172a'  // Tmavě modrá
-      }
-    }
-  }
-}
-```
-
-### Mapa
-Změňte tile layer v `scripts/provozni-mapa.js`:
-```javascript
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap contributors',
-  maxZoom: 19
-}).addTo(app.map);
-```
-
----
-
-## 🐛 Debugging
-
-### Konzole
-Otevřete Developer Tools (F12) a zkontrolujte konzoli:
-```
-✅ Očekávaný výstup:
-🚀 JVS Provozní Mapa v5.0 starting...
-📍 Initializing map...
-✅ Map initialized
-📌 Rendering markers...
-✅ Rendered 41 markers
-✅ JVS App initialized successfully
-```
-
-### Časté problémy
-
-**Mapa se nezobrazuje:**
-- Vyčistěte cache (Ctrl+Shift+Delete)
-- Hard refresh (Ctrl+Shift+R)
-- Zkontrolujte konzoli na chyby
-
-**Markery se nezobrazují:**
-- Zkontrolujte data v `initialAreas`
-- Zkontrolujte souřadnice (lat, lng)
-- Zkontrolujte konzoli na chyby
-
-**Service Worker nefunguje:**
-- Musí běžet na HTTPS nebo localhost
-- Zkontrolujte Application → Service Workers v DevTools
-- Unregister a znovu načtěte
+- **I.** - Kategorie I (nejvyšší priorita)
+- **II.** - Kategorie II (střední priorita)
+- **B** - Kategorie B (základní)
 
 ---
 
 ## 📊 Data
 
-### Areály
-Aplikace obsahuje **41 vodárenských areálů** v okresech:
-- **PI** - Písek
-- **ST** - Strakonice
-- **CB** - České Budějovice
-- **CK** - Český Krumlov
-- **PT** - Prachatice
-- **TA** - Tábor
+Aplikace obsahuje data o **41 vodárenských areálech**:
 
-### Kategorie
-- **I.** - Kategorie I (vysoká priorita)
-- **II.** - Kategorie II (střední priorita)
-- **B** - Bez kategorie
+- **Okresy:** PI (2), ST (2), CB (20), CK (4), PT (4), TA (9)
+- **Celková plocha:** ~200 000 m²
+- **Celkové oplocení:** ~10 000 bm
+
+Data jsou uložena přímo v `scripts/provozni-mapa.js` jako JavaScript pole.
 
 ---
 
-## 🔒 Bezpečnost
+## 🔧 Konfigurace
 
-### XSS Protection
-- ✅ Žádné `innerHTML` s uživatelskými daty
-- ✅ Všechny popupy přes `createElement`
-- ✅ `textContent` místo `innerHTML`
-- ✅ Bezpečné event listenery
+### Změna výchozího zobrazení mapy
 
-### Best Practices
-- ✅ CSP ready
-- ✅ HTTPS ready
-- ✅ No inline scripts (kromě config)
-- ✅ No `eval()`
+V `scripts/provozni-mapa.js`:
+
+```javascript
+map = L.map('map').setView([49.15, 14.15], 10);
+//                           [lat,   lng  ] zoom
+```
+
+### Změna clusteru
+
+```javascript
+clusterGroup = L.markerClusterGroup({
+    maxClusterRadius: 50,  // Poloměr clusteru
+    spiderfyOnMaxZoom: true
+});
+```
+
+### Přidání nového areálu
+
+V `scripts/provozni-mapa.js` přidejte do pole `areas`:
+
+```javascript
+{
+    id: 42,
+    name: "Nový areál",
+    district: "PI",
+    lat: 49.123,
+    lng: 14.456,
+    area: 1000,
+    fence: 100,
+    cat: "I.",
+    is_maintained: false
+}
+```
 
 ---
 
-## 📈 Výkon
+## 🐛 Řešení problémů
 
-### Optimalizace
-- ✅ Clustering pro velké množství markerů
-- ✅ Lazy loading weather API
-- ✅ Service Worker cache
-- ✅ Minimální DOM manipulace
-- ✅ Event delegation
+### Mapa se nezobrazuje
 
-### Metriky
-- **Načítání:** < 2s
-- **Interaktivita:** < 1s
-- **Rendering:** 60 FPS
-- **Paměť:** < 50 MB
+1. **Vyčistěte cache:**
+   - Chrome: `Ctrl+Shift+Delete`
+   - Firefox: `Ctrl+Shift+Delete`
 
----
+2. **Hard refresh:**
+   - Chrome: `Ctrl+Shift+R`
+   - Firefox: `Ctrl+F5`
 
-## 🤝 Přispívání
+3. **Zkontrolujte konzoli:**
+   - F12 → Console
+   - Hledejte červené chyby
 
-Příspěvky jsou vítány! Prosím:
+### Markery se nezobrazují
 
-1. Fork repozitář
-2. Vytvořte feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit změny (`git commit -m 'Add some AmazingFeature'`)
-4. Push do branch (`git push origin feature/AmazingFeature`)
-5. Otevřete Pull Request
+1. **Zkontrolujte data:**
+   - Otevřete `scripts/provozni-mapa.js`
+   - Ověřte, že pole `areas` obsahuje data
+
+2. **Zkontrolujte konzoli:**
+   - Měli byste vidět: `✅ Rendered 41 markers`
+
+### Filtry nefungují
+
+1. **Zkontrolujte event listenery:**
+   - Konzole by měla zobrazit: `✅ Event listeners set up`
+
+2. **Zkontrolujte ID elementů:**
+   - `searchInput`, `districtFilter`, `maintainedToggle`
 
 ---
 
 ## 📝 Changelog
 
-### v5.0.0 (2025-12-25)
-- ✅ Kompletní přepsání `index.html`
-- ✅ Kompletní přepsání `provozni-mapa.js`
-- ✅ Aktualizace Service Worker
-- ✅ 100% funkční mapa
-- ✅ Všechny features fungují
-- ✅ XSS protection
-- ✅ Clean code
+### v6.0 (2025-12-25)
+- ✅ Kompletní přepsání aplikace
+- ✅ Odstranění Firebase závislosti
+- ✅ Zjednodušení kódu
+- ✅ Oprava všech filtrů
+- ✅ Oprava interaktivních markerů
+- ✅ Vyčištění repozitáře
 
-### v4.1.0 (2025-12-25)
-- ⚠️ Částečné opravy
-- ⚠️ Mapa se nezobrazovala
+### v5.1 (2025-12-25)
+- ✅ Auto-start bez Firebase
+- ✅ Lepší console logging
 
----
-
-## 📄 License
-
-MIT License - viz [LICENSE](LICENSE) soubor
+### v5.0 (2025-12-25)
+- ✅ Kompletní přepsání index.html
+- ✅ Kompletní přepsání provozni-mapa.js
+- ✅ XSS-safe popupy
 
 ---
 
-## 👤 Autor
+## 👨‍💻 Autor
 
 **Dominik Schmied**
 - Email: d.schmied@lantaron.cz
@@ -340,24 +259,20 @@ MIT License - viz [LICENSE](LICENSE) soubor
 
 ---
 
+## 📄 Licence
+
+Tento projekt je určen pro interní použití JVS.
+
+---
+
 ## 🙏 Poděkování
 
-- [Leaflet](https://leafletjs.com/) - Mapová knihovna
-- [OpenStreetMap](https://www.openstreetmap.org/) - Map data
-- [Open-Meteo](https://open-meteo.com/) - Weather API
-- [Tailwind CSS](https://tailwindcss.com/) - CSS framework
+- [Leaflet](https://leafletjs.com/) - Open-source JavaScript knihovna pro interaktivní mapy
+- [Leaflet.markercluster](https://github.com/Leaflet/Leaflet.markercluster) - Clustering plugin
+- [OpenStreetMap](https://www.openstreetmap.org/) - Mapové podklady
+- [Open-Meteo](https://open-meteo.com/) - Počasí API
 - [Font Awesome](https://fontawesome.com/) - Ikony
 
 ---
 
-## 📞 Podpora
-
-Máte problém nebo otázku?
-
-1. Zkontrolujte [COMPLETE-FIX-V5.md](COMPLETE-FIX-V5.md)
-2. Otevřete [Issue](https://github.com/Dominik-88/FOREST/issues)
-3. Kontaktujte autora
-
----
-
-**🎉 JVS FOREST v5.0 - 100% FUNKČNÍ! 🚀**
+**🎉 JVS Provozní Mapa v6.0 - Clean, Simple, Functional!**
