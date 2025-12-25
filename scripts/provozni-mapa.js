@@ -1,9 +1,9 @@
 /**
- * JVS Provozní Mapa v6.0
- * Clean, Simple, 100% Functional
+ * JVS Provozní Mapa v6.1
+ * Clean, Simple, 100% Functional + Google Maps Integration
  */
 
-console.log('🚀 JVS Provozní Mapa v6.0 starting...');
+console.log('🚀 JVS Provozní Mapa v6.1 starting...');
 
 // =============================================
 // DATA - 41 AREÁLŮ
@@ -84,6 +84,18 @@ function updateStats() {
     document.getElementById('totalFence').textContent = totalFence.toLocaleString('cs-CZ');
 }
 
+// Generate Google Maps URL
+function getGoogleMapsUrl(lat, lng) {
+    return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+}
+
+// Open Google Maps in new tab
+function openInGoogleMaps(lat, lng, name) {
+    const url = getGoogleMapsUrl(lat, lng);
+    window.open(url, '_blank');
+    showToast(`Otevírám ${name} v Google Maps`, 'success');
+}
+
 // =============================================
 // MAP FUNCTIONS
 // =============================================
@@ -141,14 +153,31 @@ function renderMarkers() {
             <div><strong>Kategorie:</strong> ${area.cat}</div>
             <div><strong>Plocha:</strong> ${area.area.toLocaleString('cs-CZ')} m²</div>
             <div><strong>Oplocení:</strong> ${area.fence} bm</div>
+            <div><strong>Souřadnice:</strong> ${area.lat.toFixed(6)}, ${area.lng.toFixed(6)}</div>
         `;
         popup.appendChild(info);
         
-        const btn = document.createElement('button');
-        btn.className = `popup-btn ${area.is_maintained ? 'maintained' : 'not-maintained'}`;
-        btn.textContent = area.is_maintained ? '✓ Hotovo' : '⚠ K údržbě';
-        btn.onclick = () => toggleMaintenance(area.id);
-        popup.appendChild(btn);
+        // Button container
+        const btnContainer = document.createElement('div');
+        btnContainer.style.display = 'flex';
+        btnContainer.style.gap = '8px';
+        btnContainer.style.marginTop = '10px';
+        
+        // Toggle maintenance button
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = `popup-btn ${area.is_maintained ? 'maintained' : 'not-maintained'}`;
+        toggleBtn.textContent = area.is_maintained ? '✓ Hotovo' : '⚠ K údržbě';
+        toggleBtn.onclick = () => toggleMaintenance(area.id);
+        btnContainer.appendChild(toggleBtn);
+        
+        // Google Maps button
+        const mapsBtn = document.createElement('button');
+        mapsBtn.className = 'popup-btn maps-btn';
+        mapsBtn.innerHTML = '🗺️ Google Maps';
+        mapsBtn.onclick = () => openInGoogleMaps(area.lat, area.lng, area.name);
+        btnContainer.appendChild(mapsBtn);
+        
+        popup.appendChild(btnContainer);
         
         marker.bindPopup(popup);
         clusterGroup.addLayer(marker);
@@ -312,4 +341,4 @@ if (document.readyState === 'loading') {
     init();
 }
 
-console.log('✅ JVS Provozní Mapa v6.0 loaded');
+console.log('✅ JVS Provozní Mapa v6.1 loaded');
