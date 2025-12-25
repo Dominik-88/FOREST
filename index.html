@@ -2,62 +2,68 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#2563eb">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="JVS Mapa">
-    <meta name="description" content="Provozní mapa vodárenských areálů">
-    <meta name="author" content="Dominik Schmied">
-    
-    <title>JVS Provozní mapa</title>
-
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JVS Provozní Mapa</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
-
+    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#3b82f6',
-                        secondary: '#1f2937',
-                        success: '#10b981',
-                        danger: '#ef4444',
-                        warning: '#f59e0b',
-                        background: '#0f172a'
-                    }
-                }
-            }
-        }
-    </script>
-
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        html, body { 
-            height: 100%; 
-            overflow: hidden; 
-            background: #0f172a; 
-            color: #e5e7eb; 
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e5e7eb;
+            overflow: hidden;
         }
         
-        #map { 
-            position: absolute;
+        /* Header */
+        #header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+        
+        #header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #3b82f6;
+        }
+        
+        #header button {
+            background: rgba(59, 130, 246, 0.2);
+            border: none;
+            color: #3b82f6;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        
+        #header button:hover {
+            background: rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Map */
+        #map {
+            position: fixed;
             top: 60px;
             left: 0;
             right: 0;
@@ -65,181 +71,305 @@
             z-index: 1;
         }
         
-        .leaflet-popup-content-wrapper { 
-            background: #1f2937; 
-            color: #e5e7eb; 
-            border-radius: 0.75rem; 
-        }
-        
-        .leaflet-popup-tip { background: #1f2937; }
-        
-        .toast {
-            animation: fadeInOut 4s ease-in-out forwards;
-        }
-        
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(20px); }
-            10% { opacity: 1; transform: translateY(0); }
-            90% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-20px); }
-        }
-
-        .panel {
+        /* Panel */
+        #panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 20px 20px 0 0;
+            z-index: 999;
+            transform: translateY(calc(100% - 60px));
             transition: transform 0.3s ease;
         }
-
+        
+        #panel.open {
+            transform: translateY(0);
+        }
+        
+        #panelHandle {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        #panelContent {
+            padding: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(51, 65, 85, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+        
+        /* Filters */
+        .filter-section {
+            background: rgba(51, 65, 85, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #3b82f6;
+            margin-bottom: 15px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            color: #e5e7eb;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin: 0;
+        }
+        
+        /* Weather */
+        #weatherContent {
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .weather-temp {
+            font-size: 32px;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 10px;
+        }
+        
+        .weather-details {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        
+        /* Popup */
+        .leaflet-popup-content-wrapper {
+            background: #1e293b;
+            color: #e5e7eb;
+            border-radius: 12px;
+            padding: 0;
+        }
+        
+        .leaflet-popup-content {
+            margin: 0;
+            min-width: 250px;
+        }
+        
+        .popup-content {
+            padding: 15px;
+        }
+        
+        .popup-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 10px;
+        }
+        
+        .popup-info {
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        
+        .popup-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .popup-btn.maintained {
+            background: #10b981;
+            color: white;
+        }
+        
+        .popup-btn.not-maintained {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .popup-btn:hover {
+            opacity: 0.9;
+        }
+        
+        /* Toast */
+        #toastContainer {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1001;
+        }
+        
+        .toast {
+            background: #1e293b;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.warning { border-left: 4px solid #f59e0b; }
+        .toast.danger { border-left: 4px solid #ef4444; }
+        
+        /* Spinner */
         .spinner {
-            border: 3px solid rgba(255,255,255,0.1);
+            border: 3px solid rgba(255, 255, 255, 0.1);
             border-left-color: #3b82f6;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
+            width: 30px;
+            height: 30px;
             animation: spin 1s linear infinite;
+            margin: 20px auto;
         }
-
+        
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
-
-<body class="bg-background text-white">
+<body>
 
 <!-- Header -->
-<header class="fixed top-0 left-0 right-0 z-[1000] bg-background/95 backdrop-blur-sm shadow-xl">
-    <div class="flex items-center justify-between p-3">
-        <div class="flex items-center gap-2">
-            <i class="fas fa-water text-primary text-2xl"></i>
-            <h1 class="text-xl font-bold">JVS Provoz</h1>
-            <span id="statusBadge" class="text-xs px-2 py-1 rounded bg-green-500/20 text-green-400">
-                <i class="fas fa-circle text-xs"></i> Online
-            </span>
-        </div>
-        <div class="flex gap-2">
-            <button id="locateBtn" class="bg-primary/20 text-primary p-2 rounded-lg hover:bg-primary/30 transition">
-                <i class="fas fa-location-crosshairs"></i>
-            </button>
-            <button id="togglePanelBtn" class="bg-primary/20 text-primary p-2 rounded-lg hover:bg-primary/30 transition">
-                <i class="fas fa-sliders-h"></i>
-            </button>
-        </div>
+<div id="header">
+    <h1><i class="fas fa-water"></i> JVS Provozní Mapa</h1>
+    <div>
+        <button id="locateBtn" title="Najít moji polohu">
+            <i class="fas fa-location-crosshairs"></i>
+        </button>
+        <button id="togglePanelBtn" title="Zobrazit panel">
+            <i class="fas fa-sliders-h"></i>
+        </button>
     </div>
-</header>
+</div>
 
-<!-- Map Container -->
+<!-- Map -->
 <div id="map"></div>
 
 <!-- Toast Container -->
-<div id="toastContainer" class="fixed top-20 right-4 z-[1001] space-y-2"></div>
+<div id="toastContainer"></div>
 
-<!-- Bottom Panel -->
-<div id="panel" class="fixed bottom-0 left-0 right-0 z-[999] bg-secondary/95 backdrop-blur-sm rounded-t-3xl shadow-2xl panel" style="transform: translateY(calc(100% - 60px))">
-    <div class="h-[60px] flex items-center justify-center cursor-pointer" id="panelHandle">
-        <i class="fas fa-chevron-up text-2xl text-primary/70" id="panelIcon"></i>
+<!-- Panel -->
+<div id="panel">
+    <div id="panelHandle">
+        <i class="fas fa-chevron-up" style="font-size: 24px; color: #3b82f6;"></i>
     </div>
     
-    <div class="p-4 space-y-4 overflow-y-auto max-h-[70vh]" id="panelContent">
-        
+    <div id="panelContent">
         <!-- Stats -->
-        <div class="bg-slate-800 p-4 rounded-xl">
-            <h2 class="text-lg font-bold mb-3 text-primary">📊 Statistiky</h2>
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-slate-700 p-3 rounded-lg text-center">
-                    <div class="text-2xl font-bold" id="totalCount">0</div>
-                    <div class="text-xs opacity-70">Celkem areálů</div>
-                </div>
-                <div class="bg-slate-700 p-3 rounded-lg text-center">
-                    <div class="text-2xl font-bold text-warning" id="remainingCount">0</div>
-                    <div class="text-xs opacity-70">K údržbě</div>
-                </div>
-                <div class="bg-slate-700 p-3 rounded-lg text-center">
-                    <div class="text-2xl font-bold" id="totalArea">0</div>
-                    <div class="text-xs opacity-70">Plocha (m²)</div>
-                </div>
-                <div class="bg-slate-700 p-3 rounded-lg text-center">
-                    <div class="text-2xl font-bold" id="totalFence">0</div>
-                    <div class="text-xs opacity-70">Oplocení (bm)</div>
-                </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">Celkem areálů</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="remainingCount" style="color: #f59e0b;">0</div>
+                <div class="stat-label">K údržbě</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalArea">0</div>
+                <div class="stat-label">Plocha (m²)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalFence">0</div>
+                <div class="stat-label">Oplocení (bm)</div>
             </div>
         </div>
-
+        
         <!-- Filters -->
-        <div class="bg-slate-800 p-4 rounded-xl">
-            <h2 class="text-lg font-bold mb-3 text-primary">🔍 Filtry</h2>
-            <input id="searchInput" type="text" placeholder="Hledat název..." 
-                   class="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 mb-2">
-            <select id="districtFilter" class="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 mb-2">
+        <div class="filter-section">
+            <h3><i class="fas fa-filter"></i> Filtry</h3>
+            <input type="text" id="searchInput" placeholder="Hledat název areálu...">
+            <select id="districtFilter">
                 <option value="">Všechny okresy</option>
             </select>
-            <label class="flex items-center justify-between bg-slate-700 p-3 rounded-lg cursor-pointer">
-                <span>Jen k údržbě</span>
-                <input type="checkbox" id="maintainedToggle" class="w-5 h-5">
+            <label class="checkbox-label">
+                <span>Zobrazit jen k údržbě</span>
+                <input type="checkbox" id="maintainedToggle">
             </label>
         </div>
-
+        
         <!-- Weather -->
-        <div class="bg-slate-800 p-4 rounded-xl">
-            <h2 class="text-lg font-bold mb-3 text-primary">☁️ Počasí</h2>
-            <div id="weatherContent" class="text-center py-2">
-                <div class="spinner mx-auto"></div>
+        <div class="filter-section">
+            <h3><i class="fas fa-cloud-sun"></i> Počasí</h3>
+            <div id="weatherContent">
+                <div class="spinner"></div>
             </div>
         </div>
-
     </div>
 </div>
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
-<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-<script src="https://unpkg.com/leaflet-geometryutil@0.9.3/src/leaflet.geometryutil.js"></script>
-
-<!-- Firebase -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // Firebase config (optional)
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-
-    if (firebaseConfig) {
-        const app = initializeApp(firebaseConfig);
-        window.db = getFirestore(app);
-        window.auth = getAuth(app);
-
-        onAuthStateChanged(window.auth, async (user) => {
-            if (!user) {
-                await signInAnonymously(window.auth);
-            }
-            window.userId = window.auth.currentUser?.uid || 'guest';
-            window.firebaseReady = true;
-            if (window.initApp) window.initApp();
-        });
-    } else {
-        console.log('📴 Firebase not configured, using offline mode');
-        window.userId = 'guest';
-        window.firebaseReady = true;
-        if (window.initApp) window.initApp();
-    }
-</script>
 
 <!-- Main App -->
 <script src="scripts/provozni-mapa.js"></script>
-
-<!-- Service Worker -->
-<script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-                .then(reg => console.log('✅ Service Worker registered'))
-                .catch(err => console.warn('❌ SW registration failed:', err));
-        });
-    }
-</script>
 
 </body>
 </html>
