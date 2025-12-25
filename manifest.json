@@ -1,21 +1,22 @@
 {
-  "name": "JVS Ultimate PRO",
-  "short_name": "JVS PRO",
-  "description": "AI-powered vodárenský management systém",
-  "start_url": "./jvs-ultimate-complete.html",
+  "name": "JVS Provozní Mapa",
+  "short_name": "JVS Mapa",
+  "description": "Provozní mapa vodárenských areálů s Firebase integrací",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
-  "theme_color": "#0055ff",
+  "theme_color": "#2563eb",
   "orientation": "portrait-primary",
+  "scope": "/",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%230055ff'/%3E%3Ctext x='96' y='120' font-size='100' fill='white' text-anchor='middle' font-weight='bold'%3EJ%3C/text%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%232563eb'/%3E%3Cpath d='M96 40c-20 0-36 16-36 36 0 27 36 76 36 76s36-49 36-76c0-20-16-36-36-36zm0 48c-6.6 0-12-5.4-12-12s5.4-12 12-12 12 5.4 12 12-5.4 12-12 12z' fill='white'/%3E%3C/svg%3E",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230055ff'/%3E%3Ctext x='256' y='320' font-size='280' fill='white' text-anchor='middle' font-weight='bold'%3EJ%3C/text%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%232563eb'/%3E%3Cpath d='M256 100c-50 0-90 40-90 90 0 67.5 90 190 90 190s90-122.5 90-190c0-50-40-90-90-90zm0 120c-16.5 0-30-13.5-30-30s13.5-30 30-30 30 13.5 30 30-13.5 30-30 30z' fill='white'/%3E%3C/svg%3E",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
@@ -28,22 +29,19 @@
       "name": "Mapa",
       "short_name": "Mapa",
       "description": "Zobrazit mapu areálů",
-      "url": "./jvs-ultimate-complete.html",
+      "url": "/",
       "icons": []
     },
     {
-      "name": "Trasa",
-      "short_name": "Trasa",
-      "description": "Plánování trasy",
-      "url": "./jvs-ultimate-complete.html?view=route",
-      "icons": []
-    },
-    {
-      "name": "AI Protokol",
-      "short_name": "AI",
-      "description": "Generovat AI protokol",
-      "url": "./jvs-ultimate-complete.html?view=ai",
+      "name": "Filtry",
+      "short_name": "Filtry",
+      "description": "Filtrovat areály",
+      "url": "/?panel=open",
       "icons": []
     }
-  ]
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "lang": "cs",
+  "dir": "ltr"
 }
