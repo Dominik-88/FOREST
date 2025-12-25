@@ -3,289 +3,350 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0055ff">
-    <meta name="description" content="JVS FOREST v4.0 - Profesionální systém správy vodárenských areálů">
+    <meta name="theme-color" content="#2563eb">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
-    <title>JVS FOREST v4.0 - Management System</title>
-    
-    <!-- PWA -->
-    <link rel="manifest" href="./manifest.json">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230055ff'/%3E%3Ctext x='50' y='65' font-size='60' fill='white' text-anchor='middle' font-weight='bold'%3EJ%3C/text%3E%3C/svg%3E">
-    
-    <!-- External CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css">
-    
-    <!-- Tailwind CSS -->
+    <title>JVS Provozní mapa</title>
+
+    <!-- Leaflet & Extensions -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Main Styles -->
-    <link rel="stylesheet" href="./styles/main.css">
-</head>
-<body>
-    
-    <!-- Map -->
-    <div id="map"></div>
-    
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="header-content">
-                <div>
-                    <h1 class="header-title">JVS FOREST v4.0</h1>
-                    <p class="header-subtitle">Profesionální management</p>
-                </div>
-                <div class="header-stats">
-                    <div class="stat-value" id="totalCount">41</div>
-                    <div class="stat-label">Areálů</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="sidebar-content">
-            
-            <!-- Live Weather -->
-            <div class="section-card">
-                <h3 class="section-title">
-                    <i class="fas fa-cloud-sun icon-blue"></i>
-                    Počasí v terénu
-                </h3>
-                <div class="weather-widget" id="weatherWidget">
-                    <div class="weather-main">
-                        <div>
-                            <div class="weather-temp" id="weatherTemp">--°C</div>
-                            <div class="weather-desc" id="weatherDesc">Načítání...</div>
-                        </div>
-                        <div class="weather-icon-container">
-                            <div class="weather-icon" id="weatherIcon">☁️</div>
-                        </div>
-                    </div>
-                    <div class="weather-details">
-                        <div class="weather-detail">
-                            <div class="detail-label">Vítr</div>
-                            <div class="detail-value" id="weatherWind">--</div>
-                        </div>
-                        <div class="weather-detail">
-                            <div class="detail-label">Vlhkost</div>
-                            <div class="detail-value" id="weatherHumidity">--</div>
-                        </div>
-                        <div class="weather-detail">
-                            <div class="detail-label">Srážky</div>
-                            <div class="detail-value" id="weatherRain">--</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Statistics -->
-            <div class="section-card">
-                <h3 class="section-title">📊 Statistiky</h3>
-                <div class="stats-grid">
-                    <div class="stat-card stat-blue">
-                        <div class="stat-card-value" id="statArea">198k</div>
-                        <div class="stat-card-label">Výměra (m²)</div>
-                    </div>
-                    <div class="stat-card stat-green">
-                        <div class="stat-card-value" id="statFence">10.9k</div>
-                        <div class="stat-card-label">Oplocení (bm)</div>
-                    </div>
-                    <div class="stat-card stat-purple">
-                        <div class="stat-card-value" id="statMowed">0</div>
-                        <div class="stat-card-label">Posečeno dnes</div>
-                    </div>
-                    <div class="stat-card stat-orange">
-                        <div class="stat-card-value" id="statPending">41</div>
-                        <div class="stat-card-label">Čeká na seč</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Filters -->
-            <div class="section-card">
-                <h3 class="section-title">🔍 Filtry</h3>
-                <div class="filters-container">
-                    <input type="text" 
-                           id="searchInput" 
-                           class="filter-input"
-                           placeholder="Vyhledat areál...">
-                    
-                    <select id="districtFilter" class="filter-select">
-                        <option value="">Všechny okresy</option>
-                        <option value="CB">České Budějovice</option>
-                        <option value="TA">Tábor</option>
-                        <option value="PT">Prachatice</option>
-                        <option value="CK">Český Krumlov</option>
-                        <option value="PI">Písek</option>
-                        <option value="ST">Strakonice</option>
-                    </select>
-                    
-                    <select id="statusFilter" class="filter-select">
-                        <option value="">Všechny stavy</option>
-                        <option value="pending">Čeká na seč</option>
-                        <option value="mowed">Posečeno</option>
-                        <option value="overdue">Po termínu</option>
-                    </select>
-                </div>
-            </div>
-            
-            <!-- Areals List -->
-            <div class="section-card">
-                <h3 class="section-title">📍 Areály (<span id="arealCount">41</span>)</h3>
-                <div id="arealsList" class="areals-list">
-                    <!-- Dynamically populated -->
-                </div>
-            </div>
-            
-            <!-- Export -->
-            <div class="section-card">
-                <h3 class="section-title">📥 Export</h3>
-                <div class="export-buttons">
-                    <button id="exportCSV" class="btn btn-green">
-                        <i class="fas fa-file-csv"></i> CSV
-                    </button>
-                    <button id="exportReport" class="btn btn-blue">
-                        <i class="fas fa-file-pdf"></i> Report
-                    </button>
-                </div>
-            </div>
-            
-        </div>
-    </aside>
-    
-    <!-- Sidebar Toggle -->
-    <button class="sidebar-toggle" id="sidebarToggle">
-        <i class="fas fa-bars"></i>
-    </button>
-    
-    <!-- FAB Container -->
-    <div class="fab-container" id="fabContainer">
-        <button class="fab fab-primary" id="aiBot" data-tooltip="AI Asistent">
-            <i class="fas fa-robot"></i>
-        </button>
-        <button class="fab fab-secondary" id="addAreal" data-tooltip="Přidat areál">
-            <i class="fas fa-plus"></i>
-        </button>
-        <button class="fab fab-secondary" id="locateMe" data-tooltip="Moje poloha">
-            <i class="fas fa-crosshairs"></i>
-        </button>
-        <button class="fab fab-secondary" id="heatmap" data-tooltip="Heatmapa">
-            <i class="fas fa-fire"></i>
-        </button>
-    </div>
-    
-    <!-- AI Bot Panel -->
-    <div class="ai-panel" id="aiPanel">
-        <div class="ai-header">
-            <div class="ai-header-content">
-                <i class="fas fa-robot ai-header-icon"></i>
-                <div>
-                    <h3 class="ai-header-title">AI Asistent</h3>
-                    <p class="ai-header-subtitle">Váš pomocník pro správu areálů</p>
-                </div>
-            </div>
-            <button id="closeAI" class="ai-close-btn">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div class="ai-messages" id="aiMessages">
-            <div class="ai-message ai-message-bot">
-                <p class="ai-message-title">👋 Vítejte!</p>
-                <p class="ai-message-text">Jsem váš AI asistent pro správu vodárenských areálů. Mohu vám pomoci s:</p>
-                <ul class="ai-message-list">
-                    <li>• Plánováním sečí a údržby</li>
-                    <li>• Optimalizací tras</li>
-                    <li>• Analýzou nákladů</li>
-                    <li>• Predikcí servisních úkonů</li>
-                </ul>
-                <p class="ai-message-hint">Zkuste např.: "Které areály potřebují seč?"</p>
-            </div>
-        </div>
-        
-        <div class="ai-input-section">
-            <div class="ai-input-container">
-                <textarea id="aiInput" 
-                          class="ai-input" 
-                          rows="2" 
-                          placeholder="Napište dotaz..."></textarea>
-                <button id="sendAI" class="ai-send-btn">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Mowing Modal -->
-    <div class="modal" id="mowingModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">✅ Dokončit seč</h3>
-                <button class="modal-close" data-modal="mowingModal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="mowingForm">
-                    <div class="form-group">
-                        <label class="form-label">Areál</label>
-                        <input type="text" id="mowingArealName" class="form-input" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Pracovník/Stroj</label>
-                        <input type="text" id="mowingWorker" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Poznámka</label>
-                        <textarea id="mowingNote" class="form-textarea" rows="3"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-green btn-block">
-                        <i class="fas fa-check"></i> Potvrdit dokončení
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Service Book Modal -->
-    <div class="modal" id="serviceModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">📖 Servisní knížka</h3>
-                <button class="modal-close" data-modal="serviceModal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="serviceBookContent">
-                    <!-- Dynamically populated -->
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
-    
-    <!-- External Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
-    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-    
-    <!-- Main Application -->
-    <script type="module" src="./scripts/app.js"></script>
-    
-    <!-- Service Worker -->
     <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('✅ Service Worker registered'))
-                .catch(err => console.error('❌ SW registration failed:', err));
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#1f2937',
+                        success: '#10b981',
+                        danger: '#ef4444',
+                        warning: '#f59e0b',
+                        background: '#0f172a'
+                    }
+                }
+            }
         }
     </script>
+
+    <style>
+        html, body { 
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            overflow: hidden; 
+            background: #0f172a; 
+            color: #e5e7eb; 
+            font-family: 'Inter', system-ui; 
+        }
+        
+        #mapWrapper { 
+            height: 100dvh; 
+            width: 100%; 
+            position: relative; 
+        }
+        
+        @supports (-webkit-touch-callout: none) {
+            body, #mapWrapper { height: -webkit-fill-available; }
+        }
+        
+        .panel { 
+            transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 90vh;
+        }
+        
+        #map { height: 100%; width: 100%; }
+        
+        .leaflet-popup-content-wrapper { 
+            background: #1f2937; 
+            color: #e5e7eb; 
+            border-radius: 0.75rem; 
+        }
+        
+        .leaflet-popup-tip { background: #1f2937; }
+        
+        .leaflet-draw-section a { color: #3b82f6 !important; }
+
+        .toast {
+            animation: fadeInOut 4s ease-in-out forwards;
+            pointer-events: none;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+
+        .spinner { 
+            border: 4px solid rgba(255,255,255,.1); 
+            border-left-color: #3b82f6; 
+            border-radius: 50%; 
+            width: 32px; 
+            height: 32px; 
+            animation: spin 1s linear infinite; 
+            margin: 20px auto; 
+        }
+        
+        @keyframes spin { 
+            0% { transform: rotate(0) } 
+            100% { transform: rotate(360deg) } 
+        }
+    </style>
+</head>
+
+<body class="bg-background text-white">
+
+<!-- Header -->
+<header class="fixed top-0 left-0 right-0 z-[1000] bg-background/90 backdrop-blur flex items-center justify-between p-4 shadow-xl">
+    <div class="flex items-center gap-2">
+        <i class="fas fa-water text-primary text-2xl"></i>
+        <h1 class="text-xl font-bold">JVS Provoz</h1>
+        <span id="userIdDisplay" class="text-xs opacity-50 ml-2">ID: OFFLINE</span>
+    </div>
+    <div class="flex gap-2">
+        <button id="locateBtn" class="bg-primary/20 text-primary p-3 rounded-full text-lg shadow-lg hover:bg-primary/30 transition-colors">
+            <i class="fas fa-location-crosshairs"></i>
+        </button>
+        <button id="togglePanelBtn" class="bg-primary/20 text-primary p-3 rounded-full text-lg shadow-lg hover:bg-primary/30 transition-colors">
+            <i class="fas fa-sliders-h"></i>
+        </button>
+    </div>
+</header>
+
+<!-- Map Container -->
+<div id="mapWrapper">
+    <div id="map"></div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toastContainer" class="fixed top-20 right-4 z-[1001] space-y-2"></div>
+
+<!-- Modal Container -->
+<div id="modal" class="fixed inset-0 bg-black/70 z-[1002] flex items-center justify-center p-4 hidden">
+    <div id="modalContent" class="bg-slate-800 rounded-xl p-6 w-full max-w-md shadow-2xl space-y-4">
+        <h2 id="modalTitle" class="text-xl font-bold text-primary"></h2>
+        <form id="areaForm" class="space-y-3">
+            <input type="hidden" id="areaIndex">
+            <input type="hidden" id="areaLat">
+            <input type="hidden" id="areaLng">
+            
+            <label class="block">
+                Název:
+                <input type="text" id="areaName" required class="w-full p-3 rounded bg-slate-700 border border-slate-600 focus:ring-primary focus:border-primary">
+            </label>
+            
+            <label class="block">
+                Okres:
+                <input type="text" id="areaDistrict" required class="w-full p-3 rounded bg-slate-700 border border-slate-600">
+            </label>
+            
+            <label class="block">
+                Kategorie (I./II./prázdné):
+                <input type="text" id="areaCategory" class="w-full p-3 rounded bg-slate-700 border border-slate-600">
+            </label>
+            
+            <label class="block">
+                Plocha (m²):
+                <input type="number" id="areaArea" required class="w-full p-3 rounded bg-slate-700 border border-slate-600">
+            </label>
+            
+            <label class="block">
+                Oplocení (bm):
+                <input type="number" id="areaFence" required class="w-full p-3 rounded bg-slate-700 border border-slate-600">
+            </label>
+
+            <button type="submit" class="w-full bg-success py-3 rounded-lg text-lg font-semibold hover:bg-success/90 transition-colors">
+                Uložit změny
+            </button>
+            <button type="button" id="cancelModalBtn" class="w-full bg-slate-600 py-3 rounded-lg text-lg font-semibold mt-2 hover:bg-slate-500 transition-colors">
+                Zrušit
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Bottom Sheet Panel -->
+<div class="fixed bottom-0 left-0 right-0 z-[1000] bg-secondary/95 backdrop-blur rounded-t-3xl shadow-2xl panel" id="panel" style="transform:translateY(calc(100% - 70px))">
+    <div class="h-[70px] flex items-center justify-center cursor-pointer" id="panelHandle">
+        <i class="fas fa-chevron-up text-3xl text-primary/70 transition-transform duration-300" id="panelHandleIcon"></i>
+    </div>
     
+    <div class="p-4 space-y-6 overflow-y-auto" id="panelContent">
+        
+        <div class="section bg-slate-800 p-4 rounded-xl shadow-inner">
+            <h2 class="text-lg font-bold mb-3 text-primary">📊 Souhrn & Filtry</h2>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="bg-slate-700 p-3 rounded-lg text-center">
+                    <div class="text-xl font-bold" id="totalArea">0</div>
+                    <div class="text-xs opacity-70">Celková plocha (m²)</div>
+                </div>
+                <div class="bg-slate-700 p-3 rounded-lg text-center">
+                    <div class="text-xl font-bold text-danger" id="remainingArea">0</div>
+                    <div class="text-xs opacity-70">Zbývá sekat (m²)</div>
+                </div>
+                <div class="bg-slate-700 p-3 rounded-lg text-center">
+                    <div class="text-xl font-bold" id="totalFence">0</div>
+                    <div class="text-xs opacity-70">Oplocení (bm)</div>
+                </div>
+                <div class="bg-slate-700 p-3 rounded-lg text-center">
+                    <div class="text-xl font-bold" id="objectCount">0</div>
+                    <div class="text-xs opacity-70">Areálů (filtr)</div>
+                </div>
+            </div>
+
+            <input id="searchInput" type="text" placeholder="Hledat název areálu..." class="w-full p-3 rounded bg-slate-700 border border-slate-600 mt-2">
+            <select id="districtFilter" class="w-full p-3 rounded bg-slate-700 border border-slate-600 mt-2">
+                <option value="">Všechny okresy</option>
+            </select>
+            
+            <div class="mt-2 flex gap-2">
+                <label for="heatmapToggle" class="flex-grow flex items-center justify-between bg-slate-700 p-3 rounded-lg cursor-pointer">
+                    <span>Heatmapa rizika</span>
+                    <input type="checkbox" id="heatmapToggle" class="w-5 h-5 text-primary bg-slate-600 border-slate-500 rounded focus:ring-primary">
+                </label>
+                <label for="maintainedToggle" class="flex-grow flex items-center justify-between bg-slate-700 p-3 rounded-lg cursor-pointer">
+                    <span>Jen k údržbě</span>
+                    <input type="checkbox" id="maintainedToggle" class="w-5 h-5 text-primary bg-slate-600 border-slate-500 rounded focus:ring-primary">
+                </label>
+            </div>
+        </div>
+
+        <div class="section bg-slate-800 p-4 rounded-xl shadow-inner">
+            <h2 class="text-lg font-bold mb-3 text-primary">🗺️ Trasa a Navigace</h2>
+            <div id="routeStatus" class="text-sm opacity-80 mb-3">Trasa není aktivní. Přidejte alespoň 2 areály.</div>
+            <div id="routeList" class="space-y-2 mb-4"></div>
+            <button id="resetRouteBtn" class="w-full bg-warning py-3 rounded-lg mb-2">
+                <i class="fas fa-route"></i> Reset trasy
+            </button>
+            <button id="generateAIReportBtn" class="w-full bg-purple-600 py-3 rounded-lg">
+                <i class="fas fa-robot"></i> Generovat AI Protokol
+            </button>
+        </div>
+
+        <div class="section bg-slate-800 p-4 rounded-xl shadow-inner">
+            <h2 class="text-lg font-bold mb-3 text-primary">☁️ Počasí v centru mapy</h2>
+            <div id="weatherContent" class="text-center py-4 text-sm">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <div class="section">
+             <button id="addNewAreaBtn" class="w-full bg-success py-3 rounded-lg text-lg font-semibold">
+                <i class="fas fa-plus"></i> Přidat nový areál
+             </button>
+        </div>
+        
+        <div class="section text-center p-4">
+             <button id="resetAllDataBtn" class="text-sm text-danger/70 hover:text-danger">
+                Globální Reset Dat (vymaže lokální data i trasu)
+             </button>
+        </div>
+        
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+<!-- Firebase -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, setLogLevel, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+    window.db = null;
+    window.auth = null;
+    window.userId = null;
+    window.serverTimestamp = serverTimestamp;
+    window.doc = doc;
+    window.updateDoc = updateDoc;
+    window.deleteDoc = deleteDoc;
+    window.setDoc = setDoc;
+    window.addDoc = addDoc;
+    window.collection = collection;
+    window.onSnapshot = onSnapshot;
+
+    setLogLevel('error');
+
+    if (Object.keys(firebaseConfig).length > 0) {
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.auth = getAuth(app);
+
+        onAuthStateChanged(window.auth, async (user) => {
+            if (user) {
+                window.userId = user.uid;
+                const userIdEl = document.getElementById('userIdDisplay');
+                if (userIdEl) {
+                    userIdEl.textContent = `ID: ${user.uid.substring(0, 8)}...`;
+                }
+            } else {
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(window.auth, initialAuthToken);
+                        window.userId = window.auth.currentUser.uid;
+                        const userIdEl = document.getElementById('userIdDisplay');
+                        if (userIdEl) {
+                            userIdEl.textContent = `ID: ${window.userId.substring(0, 8)}...`;
+                        }
+                    } else {
+                        await signInAnonymously(window.auth);
+                        window.userId = window.auth.currentUser.uid;
+                        const userIdEl = document.getElementById('userIdDisplay');
+                        if (userIdEl) {
+                            userIdEl.textContent = `ID: ${window.userId.substring(0, 8)} (anonym)`;
+                        }
+                    }
+                } catch (error) {
+                    console.error("Chyba přihlášení Firebase:", error);
+                    window.userId = crypto.randomUUID();
+                    const userIdEl = document.getElementById('userIdDisplay');
+                    if (userIdEl) {
+                        userIdEl.textContent = `ID: GUEST`;
+                    }
+                }
+            }
+            window.isAuthReady = true;
+            if (window.initApp) {
+                window.initApp();
+            }
+        });
+    } else {
+        console.warn("Firebase config není k dispozici. Používám pouze LocalStorage.");
+        window.userId = crypto.randomUUID();
+        const userIdEl = document.getElementById('userIdDisplay');
+        if (userIdEl) {
+            userIdEl.textContent = `ID: OFFLINE`;
+        }
+        window.isAuthReady = true;
+        if (window.initApp) {
+            window.initApp();
+        }
+    }
+</script>
+
+<!-- Main App Script -->
+<script src="scripts/app.js"></script>
+
 </body>
 </html>
