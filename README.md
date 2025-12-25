@@ -393,7 +393,7 @@ ROI:    ∞ (open-source)
 ## 📞 **PODPORA**
 
 ### **Kontakt**
-- **Email**: d.schmied@lantaron.cz
+- **Email**: dominikschmied4@gmail.com
 - **GitHub**: [Dominik-88/FOREST](https://github.com/Dominik-88/FOREST)
 - **Issues**: [GitHub Issues](https://github.com/Dominik-88/FOREST/issues)
 
