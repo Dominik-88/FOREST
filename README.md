@@ -15,6 +15,7 @@ Interaktivní mapa vodárenských areálů pro správu a údržbu.
 - **Interaktivní markery** - kliknutím zobrazíte detail
 - **Clustering** - automatické seskupování při oddálení
 - **Barevné rozlišení** - zelená (hotovo), oranžová (k údržbě)
+- **🆕 Google Maps integrace** - otevřít areál v Google Maps jedním klikem
 
 ### 🔍 Filtry
 - **Vyhledávání** podle názvu areálu
@@ -37,6 +38,7 @@ Interaktivní mapa vodárenských areálů pro správu a údržbu.
 - **Responzivní design** - funguje na mobilu i PC
 - **Toast notifikace** - vizuální zpětná vazba
 - **Skládací panel** - přehledné ovládání
+- **🆕 Zobrazení souřadnic** - přesné GPS souřadnice v popupu
 
 ---
 
@@ -44,7 +46,7 @@ Interaktivní mapa vodárenských areálů pro správu a údržbu.
 
 - **Frontend:** HTML5, CSS3, JavaScript ES6+
 - **Mapa:** Leaflet 1.9.4 + MarkerCluster
-- **API:** Open-Meteo (počasí), OpenStreetMap (tiles)
+- **API:** Open-Meteo (počasí), OpenStreetMap (tiles), Google Maps
 - **Hosting:** GitHub Pages
 
 ---
@@ -61,7 +63,10 @@ FOREST/
 ├── offline.html           # Offline stránka
 ├── robots.txt             # SEO
 ├── sitemap.xml            # SEO
-└── README.md              # Dokumentace
+├── README.md              # Dokumentace
+├── CONNECTIONS.md         # Dokumentace propojení
+├── test-connections.html  # Testovací stránka
+└── verify.sh              # Verifikační skript
 ```
 
 ---
@@ -119,11 +124,16 @@ git push origin main
    - V popupu klikněte na tlačítko "K údržbě" / "Hotovo"
    - Barva markeru se změní
 
-3. **Filtrování:**
+3. **🆕 Otevření v Google Maps:**
+   - V popupu klikněte na tlačítko "🗺️ Google Maps"
+   - Otevře se nová záložka s přesnou polohou areálu
+   - Můžete použít navigaci, Street View, satelitní zobrazení
+
+4. **Filtrování:**
    - Otevřete panel (tlačítko vpravo nahoře)
    - Použijte vyhledávání, filtr okresu nebo toggle údržby
 
-4. **Geolokace:**
+5. **Geolokace:**
    - Klikněte na tlačítko s ikonou lokace
    - Mapa se přesune na vaši polohu
 
@@ -137,9 +147,9 @@ git push origin main
 
 ## 🎨 Kategorie areálů
 
-- **I.** - Kategorie I (nejvyšší priorita)
-- **II.** - Kategorie II (střední priorita)
-- **B** - Kategorie B (základní)
+- **I.** - Kategorie I (nejvyšší priorita) - 23 areálů
+- **II.** - Kategorie II (střední priorita) - 15 areálů
+- **B** - Kategorie B (základní) - 3 areály
 
 ---
 
@@ -148,8 +158,8 @@ git push origin main
 Aplikace obsahuje data o **41 vodárenských areálech**:
 
 - **Okresy:** PI (2), ST (2), CB (20), CK (4), PT (4), TA (9)
-- **Celková plocha:** ~200 000 m²
-- **Celkové oplocení:** ~10 000 bm
+- **Celková plocha:** 198 093 m²
+- **Celkové oplocení:** 10 907 bm
 
 Data jsou uložena přímo v `scripts/provozni-mapa.js` jako JavaScript pole.
 
@@ -228,9 +238,29 @@ V `scripts/provozni-mapa.js` přidejte do pole `areas`:
 2. **Zkontrolujte ID elementů:**
    - `searchInput`, `districtFilter`, `maintainedToggle`
 
+### Google Maps se neotevírá
+
+1. **Zkontrolujte popup blocker:**
+   - Povolte popup okna pro tuto stránku
+
+2. **Zkontrolujte konzoli:**
+   - Hledejte chyby při otevírání nového okna
+
 ---
 
 ## 📝 Changelog
+
+### v6.1 (2025-12-25)
+- ✅ **Google Maps integrace**
+  - Tlačítko "🗺️ Google Maps" v popupu
+  - Otevření areálu v Google Maps v nové záložce
+  - Zobrazení GPS souřadnic v popupu
+  - Toast notifikace při otevření
+- ✅ Vylepšený popup design
+  - Dual button layout (Toggle + Maps)
+  - Širší popup (280px)
+  - Lepší button styling
+  - Hover animace
 
 ### v6.0 (2025-12-25)
 - ✅ Kompletní přepsání aplikace
@@ -248,6 +278,30 @@ V `scripts/provozni-mapa.js` přidejte do pole `areas`:
 - ✅ Kompletní přepsání index.html
 - ✅ Kompletní přepsání provozni-mapa.js
 - ✅ XSS-safe popupy
+
+---
+
+## 🧪 Testování
+
+### Automatický test
+```
+https://dominik-88.github.io/FOREST/test-connections.html
+```
+- Zkontroluje všechny závislosti
+- Zkontroluje všechny DOM elementy
+- Zkontroluje data (41 areálů)
+- Zkontroluje funkce
+- Interaktivní testy filtrů
+
+### Bash skript
+```bash
+chmod +x verify.sh
+./verify.sh
+```
+- Zkontroluje strukturu souborů
+- Zkontroluje všechna propojení
+- Vypočítá score
+- Exit code pro CI/CD
 
 ---
 
@@ -272,7 +326,8 @@ Tento projekt je určen pro interní použití JVS.
 - [OpenStreetMap](https://www.openstreetmap.org/) - Mapové podklady
 - [Open-Meteo](https://open-meteo.com/) - Počasí API
 - [Font Awesome](https://fontawesome.com/) - Ikony
+- [Google Maps](https://maps.google.com/) - Mapová integrace
 
 ---
 
-**🎉 JVS Provozní Mapa v6.0 - Clean, Simple, Functional!**
+**🎉 JVS Provozní Mapa v6.1 - Clean, Simple, Functional + Google Maps!**
