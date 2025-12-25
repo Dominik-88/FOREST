@@ -1,13 +1,13 @@
 /**
- * JVS Provozní Mapa v5.0 - COMPLETE REWRITE
+ * JVS Provozní Mapa v5.1 - FIXED INITIALIZATION
  * 100% Functional, XSS-Safe, Production Ready
  * 
- * @version 5.0.0
+ * @version 5.1.0
  * @date 2025-12-25
  * @author Dominik Schmied
  */
 
-console.log('🚀 JVS Provozní Mapa v5.0 starting...');
+console.log('🚀 JVS Provozní Mapa v5.1 starting...');
 
 // =============================================
 // INITIAL DATA - 41 AREÁLŮ
@@ -234,9 +234,11 @@ function toggleMaintenance(areaId) {
 // =============================================
 
 function applyFilters() {
-    const search = document.getElementById('searchInput').value.toLowerCase();
-    const district = document.getElementById('districtFilter').value;
-    const onlyRemaining = document.getElementById('maintainedToggle').checked;
+    const search = document.getElementById('searchInput')?.value.toLowerCase() || '';
+    const district = document.getElementById('districtFilter')?.value || '';
+    const onlyRemaining = document.getElementById('maintainedToggle')?.checked || false;
+    
+    console.log(`🔍 Applying filters: search="${search}", district="${district}", onlyRemaining=${onlyRemaining}`);
     
     app.filteredAreas = app.areas.filter(area => {
         const matchesSearch = area.name.toLowerCase().includes(search);
@@ -246,6 +248,7 @@ function applyFilters() {
         return matchesSearch && matchesDistrict && matchesMaintenance;
     });
     
+    console.log(`✅ Filtered: ${app.filteredAreas.length} / ${app.areas.length} areas`);
     renderMarkers();
 }
 
@@ -301,42 +304,69 @@ async function updateWeather() {
 // =============================================
 
 function setupEventListeners() {
+    console.log('🎧 Setting up event listeners...');
+    
     // Search
-    document.getElementById('searchInput')?.addEventListener('input', applyFilters);
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', applyFilters);
+        console.log('✅ Search listener added');
+    }
     
     // District filter
-    document.getElementById('districtFilter')?.addEventListener('change', applyFilters);
+    const districtFilter = document.getElementById('districtFilter');
+    if (districtFilter) {
+        districtFilter.addEventListener('change', applyFilters);
+        console.log('✅ District filter listener added');
+    }
     
     // Maintenance toggle
-    document.getElementById('maintainedToggle')?.addEventListener('change', applyFilters);
+    const maintainedToggle = document.getElementById('maintainedToggle');
+    if (maintainedToggle) {
+        maintainedToggle.addEventListener('change', applyFilters);
+        console.log('✅ Maintenance toggle listener added');
+    }
     
     // Locate button
-    document.getElementById('locateBtn')?.addEventListener('click', () => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                pos => {
-                    app.map.setView([pos.coords.latitude, pos.coords.longitude], 13);
-                    showToast('Vaše poloha nalezena', 'success');
-                },
-                () => showToast('Geolokace selhala', 'danger')
-            );
-        }
-    });
+    const locateBtn = document.getElementById('locateBtn');
+    if (locateBtn) {
+        locateBtn.addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => {
+                        app.map.setView([pos.coords.latitude, pos.coords.longitude], 13);
+                        showToast('Vaše poloha nalezena', 'success');
+                    },
+                    () => showToast('Geolokace selhala', 'danger')
+                );
+            }
+        });
+        console.log('✅ Locate button listener added');
+    }
     
     // Panel toggle
     const panel = document.getElementById('panel');
     const panelHandle = document.getElementById('panelHandle');
     const panelIcon = document.getElementById('panelIcon');
     
-    panelHandle?.addEventListener('click', () => {
-        const isOpen = panel.style.transform === 'translateY(0px)';
-        panel.style.transform = isOpen ? 'translateY(calc(100% - 60px))' : 'translateY(0px)';
-        panelIcon.className = isOpen ? 'fas fa-chevron-up text-2xl text-primary/70' : 'fas fa-chevron-down text-2xl text-primary/70';
-    });
+    if (panelHandle && panel && panelIcon) {
+        panelHandle.addEventListener('click', () => {
+            const isOpen = panel.style.transform === 'translateY(0px)';
+            panel.style.transform = isOpen ? 'translateY(calc(100% - 60px))' : 'translateY(0px)';
+            panelIcon.className = isOpen ? 'fas fa-chevron-up text-2xl text-primary/70' : 'fas fa-chevron-down text-2xl text-primary/70';
+        });
+        console.log('✅ Panel toggle listener added');
+    }
     
-    document.getElementById('togglePanelBtn')?.addEventListener('click', () => {
-        panelHandle.click();
-    });
+    const togglePanelBtn = document.getElementById('togglePanelBtn');
+    if (togglePanelBtn && panelHandle) {
+        togglePanelBtn.addEventListener('click', () => {
+            panelHandle.click();
+        });
+        console.log('✅ Toggle panel button listener added');
+    }
+    
+    console.log('✅ All event listeners set up');
 }
 
 // =============================================
@@ -345,7 +375,10 @@ function setupEventListeners() {
 
 function populateDistricts() {
     const select = document.getElementById('districtFilter');
-    if (!select) return;
+    if (!select) {
+        console.warn('⚠️ District filter not found');
+        return;
+    }
     
     const districts = [...new Set(app.areas.map(a => a.district))].sort();
     districts.forEach(district => {
@@ -354,9 +387,11 @@ function populateDistricts() {
         option.textContent = district;
         select.appendChild(option);
     });
+    
+    console.log(`✅ Populated ${districts.length} districts`);
 }
 
-window.initApp = function() {
+function initApp() {
     console.log('🎯 Initializing JVS App...');
     
     try {
@@ -372,11 +407,38 @@ window.initApp = function() {
         console.error('❌ Initialization error:', error);
         showToast('Chyba při načítání aplikace', 'danger');
     }
-};
-
-// Start app when Firebase is ready
-if (window.firebaseReady) {
-    window.initApp();
 }
 
-console.log('✅ JVS Provozní Mapa v5.0 loaded');
+// =============================================
+// AUTO-START
+// =============================================
+
+// Export initApp for Firebase callback
+window.initApp = initApp;
+
+// Auto-start if DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('📄 DOM loaded, checking Firebase...');
+        // Wait a bit for Firebase to initialize
+        setTimeout(() => {
+            if (!window.firebaseReady) {
+                console.log('📴 Firebase not ready, starting without it');
+                window.firebaseReady = true;
+                initApp();
+            }
+        }, 1000);
+    });
+} else {
+    console.log('📄 DOM already loaded, checking Firebase...');
+    // Wait a bit for Firebase to initialize
+    setTimeout(() => {
+        if (!window.firebaseReady) {
+            console.log('📴 Firebase not ready, starting without it');
+            window.firebaseReady = true;
+            initApp();
+        }
+    }, 1000);
+}
+
+console.log('✅ JVS Provozní Mapa v5.1 loaded');
