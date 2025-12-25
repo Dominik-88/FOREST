@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JVS Mapa - Test</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; }
+        #map { 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 300px;
+        }
+        #info h3 { margin: 0 0 10px 0; color: #2563eb; }
+        #info p { margin: 5px 0; font-size: 14px; }
+        .marker-count { font-weight: bold; color: #10b981; }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div id="info">
+    <h3>🗺️ JVS Mapa Test</h3>
+    <p>Status: <span id="status">Načítání...</span></p>
+    <p>Areálů: <span id="count" class="marker-count">0</span></p>
+    <p id="error" style="color: red; display: none;"></p>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+console.log('🚀 Starting JVS Map Test...');
+
+// Test data - 5 areálů
+const testAreas = [
+    {name:"VDJ Amerika II", lat:49.305131, lng:14.166126, district:"PI"},
+    {name:"VDJ Drahonice", lat:49.202902, lng:14.063713, district:"ST"},
+    {name:"VDJ Vodňany", lat:49.164550, lng:14.177836, district:"ST"},
+    {name:"VDJ Hlavatce", lat:49.063584, lng:14.267751, district:"CB"},
+    {name:"VDJ Šibeniční vrch I", lat:49.025083, lng:13.994111, district:"PT"}
+];
+
+try {
+    // Initialize map
+    console.log('📍 Initializing map...');
+    const map = L.map('map').setView([49.15, 14.15], 10);
+    
+    // Add tile layer
+    console.log('🗺️ Adding tile layer...');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+    
+    // Add markers
+    console.log('📌 Adding markers...');
+    let markerCount = 0;
+    
+    testAreas.forEach(area => {
+        const marker = L.marker([area.lat, area.lng]).addTo(map);
+        marker.bindPopup(`
+            <div style="padding: 10px;">
+                <h3 style="margin: 0 0 10px 0; color: #2563eb;">${area.name}</h3>
+                <p style="margin: 5px 0;"><strong>Okres:</strong> ${area.district}</p>
+                <p style="margin: 5px 0;"><strong>Souřadnice:</strong><br>${area.lat.toFixed(6)}, ${area.lng.toFixed(6)}</p>
+            </div>
+        `);
+        markerCount++;
+        console.log(`✅ Marker ${markerCount}: ${area.name}`);
+    });
+    
+    // Update UI
+    document.getElementById('status').textContent = '✅ Funkční';
+    document.getElementById('status').style.color = '#10b981';
+    document.getElementById('count').textContent = markerCount;
+    
+    console.log(`✅ Map initialized successfully with ${markerCount} markers`);
+    
+} catch (error) {
+    console.error('❌ Error:', error);
+    document.getElementById('status').textContent = '❌ Chyba';
+    document.getElementById('status').style.color = '#ef4444';
+    document.getElementById('error').textContent = error.message;
+    document.getElementById('error').style.display = 'block';
+}
+</script>
+
+</body>
+</html>
