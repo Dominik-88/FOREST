@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="JVS Mapa">
-    <meta name="description" content="Provozní mapa vodárenských areálů s Firebase integrací">
+    <meta name="description" content="Provozní mapa vodárenských areálů">
     <meta name="author" content="Dominik Schmied">
     
     <title>JVS Provozní mapa</title>
@@ -15,20 +15,17 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
     
-    <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%232563eb'/%3E%3Cpath d='M96 40c-20 0-36 16-36 36 0 27 36 76 36 76s36-49 36-76c0-20-16-36-36-36zm0 48c-6.6 0-12-5.4-12-12s5.4-12 12-12 12 5.4 12 12-5.4 12-12 12z' fill='white'/%3E%3C/svg%3E">
-
-    <!-- Leaflet & Extensions -->
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
 
-    <!-- Icons -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-    <!-- Tailwind -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -49,32 +46,24 @@
     </script>
 
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         html, body { 
-            margin: 0; 
-            padding: 0; 
             height: 100%; 
             overflow: hidden; 
             background: #0f172a; 
             color: #e5e7eb; 
-            font-family: 'Inter', system-ui; 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
         
-        #mapWrapper { 
-            height: 100dvh; 
-            width: 100%; 
-            position: relative; 
+        #map { 
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
         }
-        
-        @supports (-webkit-touch-callout: none) {
-            body, #mapWrapper { height: -webkit-fill-available; }
-        }
-        
-        .panel { 
-            transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1);
-            max-height: 90vh;
-        }
-        
-        #map { height: 100%; width: 100%; }
         
         .leaflet-popup-content-wrapper { 
             background: #1f2937; 
@@ -84,11 +73,8 @@
         
         .leaflet-popup-tip { background: #1f2937; }
         
-        .leaflet-draw-section a { color: #3b82f6 !important; }
-
         .toast {
             animation: fadeInOut 4s ease-in-out forwards;
-            pointer-events: none;
         }
         
         @keyframes fadeInOut {
@@ -98,19 +84,22 @@
             100% { opacity: 0; transform: translateY(-20px); }
         }
 
-        .spinner { 
-            border: 4px solid rgba(255,255,255,.1); 
-            border-left-color: #3b82f6; 
-            border-radius: 50%; 
-            width: 32px; 
-            height: 32px; 
-            animation: spin 1s linear infinite; 
-            margin: 20px auto; 
+        .panel {
+            transition: transform 0.3s ease;
         }
-        
-        @keyframes spin { 
-            0% { transform: rotate(0) } 
-            100% { transform: rotate(360deg) } 
+
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-left-color: #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -118,258 +107,136 @@
 <body class="bg-background text-white">
 
 <!-- Header -->
-<header class="fixed top-0 left-0 right-0 z-[1000] bg-background/90 backdrop-blur flex items-center justify-between p-4 shadow-xl">
-    <div class="flex items-center gap-2">
-        <i class="fas fa-water text-primary text-2xl"></i>
-        <h1 class="text-xl font-bold">JVS Provoz</h1>
-        <span id="userIdDisplay" class="text-xs opacity-50 ml-2">ID: OFFLINE</span>
-    </div>
-    <div class="flex gap-2">
-        <button id="locateBtn" class="bg-primary/20 text-primary p-3 rounded-full text-lg shadow-lg hover:bg-primary/30 transition-colors">
-            <i class="fas fa-location-crosshairs"></i>
-        </button>
-        <button id="togglePanelBtn" class="bg-primary/20 text-primary p-3 rounded-full text-lg shadow-lg hover:bg-primary/30 transition-colors">
-            <i class="fas fa-sliders-h"></i>
-        </button>
+<header class="fixed top-0 left-0 right-0 z-[1000] bg-background/95 backdrop-blur-sm shadow-xl">
+    <div class="flex items-center justify-between p-3">
+        <div class="flex items-center gap-2">
+            <i class="fas fa-water text-primary text-2xl"></i>
+            <h1 class="text-xl font-bold">JVS Provoz</h1>
+            <span id="statusBadge" class="text-xs px-2 py-1 rounded bg-green-500/20 text-green-400">
+                <i class="fas fa-circle text-xs"></i> Online
+            </span>
+        </div>
+        <div class="flex gap-2">
+            <button id="locateBtn" class="bg-primary/20 text-primary p-2 rounded-lg hover:bg-primary/30 transition">
+                <i class="fas fa-location-crosshairs"></i>
+            </button>
+            <button id="togglePanelBtn" class="bg-primary/20 text-primary p-2 rounded-lg hover:bg-primary/30 transition">
+                <i class="fas fa-sliders-h"></i>
+            </button>
+        </div>
     </div>
 </header>
 
 <!-- Map Container -->
-<div id="mapWrapper">
-    <div id="map"></div>
-</div>
+<div id="map"></div>
 
-<!-- Toast Notifications Container -->
+<!-- Toast Container -->
 <div id="toastContainer" class="fixed top-20 right-4 z-[1001] space-y-2"></div>
 
-<!-- Modal Container -->
-<div id="modal" class="fixed inset-0 bg-black/70 z-[1002] flex items-center justify-center p-4 hidden">
-    <div id="modalContent" class="bg-slate-800 rounded-xl p-6 w-full max-w-md shadow-2xl space-y-4">
-        <h2 id="modalTitle" class="text-xl font-bold text-primary"></h2>
-        <form id="areaForm" class="space-y-3">
-            <input type="hidden" id="areaIndex">
-            <input type="hidden" id="areaLat">
-            <input type="hidden" id="areaLng">
-            
-            <label class="block">
-                Název:
-                <input type="text" id="areaName" required class="w-full p-3 rounded bg-slate-700 border border-slate-600 focus:ring-primary focus:border-primary">
-            </label>
-            
-            <label class="block">
-                Okres:
-                <input type="text" id="areaDistrict" required class="w-full p-3 rounded bg-slate-700 border border-slate-600">
-            </label>
-            
-            <label class="block">
-                Kategorie (I./II./prázdné):
-                <input type="text" id="areaCategory" class="w-full p-3 rounded bg-slate-700 border border-slate-600">
-            </label>
-            
-            <label class="block">
-                Plocha (m²):
-                <input type="number" id="areaArea" required class="w-full p-3 rounded bg-slate-700 border border-slate-600">
-            </label>
-            
-            <label class="block">
-                Oplocení (bm):
-                <input type="number" id="areaFence" required class="w-full p-3 rounded bg-slate-700 border border-slate-600">
-            </label>
-
-            <button type="submit" class="w-full bg-success py-3 rounded-lg text-lg font-semibold hover:bg-success/90 transition-colors">
-                Uložit změny
-            </button>
-            <button type="button" id="cancelModalBtn" class="w-full bg-slate-600 py-3 rounded-lg text-lg font-semibold mt-2 hover:bg-slate-500 transition-colors">
-                Zrušit
-            </button>
-        </form>
-    </div>
-</div>
-
-<!-- Bottom Sheet Panel -->
-<div class="fixed bottom-0 left-0 right-0 z-[1000] bg-secondary/95 backdrop-blur rounded-t-3xl shadow-2xl panel" id="panel" style="transform:translateY(calc(100% - 70px))">
-    <div class="h-[70px] flex items-center justify-center cursor-pointer" id="panelHandle">
-        <i class="fas fa-chevron-up text-3xl text-primary/70 transition-transform duration-300" id="panelHandleIcon"></i>
+<!-- Bottom Panel -->
+<div id="panel" class="fixed bottom-0 left-0 right-0 z-[999] bg-secondary/95 backdrop-blur-sm rounded-t-3xl shadow-2xl panel" style="transform: translateY(calc(100% - 60px))">
+    <div class="h-[60px] flex items-center justify-center cursor-pointer" id="panelHandle">
+        <i class="fas fa-chevron-up text-2xl text-primary/70" id="panelIcon"></i>
     </div>
     
-    <div class="p-4 space-y-6 overflow-y-auto" id="panelContent">
+    <div class="p-4 space-y-4 overflow-y-auto max-h-[70vh]" id="panelContent">
         
-        <div class="section bg-slate-800 p-4 rounded-xl shadow-inner">
-            <h2 class="text-lg font-bold mb-3 text-primary">📊 Souhrn & Filtry</h2>
-            
-            <div class="grid grid-cols-2 gap-4 mb-4">
+        <!-- Stats -->
+        <div class="bg-slate-800 p-4 rounded-xl">
+            <h2 class="text-lg font-bold mb-3 text-primary">📊 Statistiky</h2>
+            <div class="grid grid-cols-2 gap-3">
                 <div class="bg-slate-700 p-3 rounded-lg text-center">
-                    <div class="text-xl font-bold" id="totalArea">0</div>
-                    <div class="text-xs opacity-70">Celková plocha (m²)</div>
+                    <div class="text-2xl font-bold" id="totalCount">0</div>
+                    <div class="text-xs opacity-70">Celkem areálů</div>
                 </div>
                 <div class="bg-slate-700 p-3 rounded-lg text-center">
-                    <div class="text-xl font-bold text-danger" id="remainingArea">0</div>
-                    <div class="text-xs opacity-70">Zbývá sekat (m²)</div>
+                    <div class="text-2xl font-bold text-warning" id="remainingCount">0</div>
+                    <div class="text-xs opacity-70">K údržbě</div>
                 </div>
                 <div class="bg-slate-700 p-3 rounded-lg text-center">
-                    <div class="text-xl font-bold" id="totalFence">0</div>
+                    <div class="text-2xl font-bold" id="totalArea">0</div>
+                    <div class="text-xs opacity-70">Plocha (m²)</div>
+                </div>
+                <div class="bg-slate-700 p-3 rounded-lg text-center">
+                    <div class="text-2xl font-bold" id="totalFence">0</div>
                     <div class="text-xs opacity-70">Oplocení (bm)</div>
                 </div>
-                <div class="bg-slate-700 p-3 rounded-lg text-center">
-                    <div class="text-xl font-bold" id="objectCount">0</div>
-                    <div class="text-xs opacity-70">Areálů (filtr)</div>
-                </div>
             </div>
+        </div>
 
-            <input id="searchInput" type="text" placeholder="Hledat název areálu..." class="w-full p-3 rounded bg-slate-700 border border-slate-600 mt-2">
-            <select id="districtFilter" class="w-full p-3 rounded bg-slate-700 border border-slate-600 mt-2">
+        <!-- Filters -->
+        <div class="bg-slate-800 p-4 rounded-xl">
+            <h2 class="text-lg font-bold mb-3 text-primary">🔍 Filtry</h2>
+            <input id="searchInput" type="text" placeholder="Hledat název..." 
+                   class="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 mb-2">
+            <select id="districtFilter" class="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 mb-2">
                 <option value="">Všechny okresy</option>
             </select>
-            
-            <div class="mt-2 flex gap-2">
-                <label for="heatmapToggle" class="flex-grow flex items-center justify-between bg-slate-700 p-3 rounded-lg cursor-pointer">
-                    <span>Heatmapa rizika</span>
-                    <input type="checkbox" id="heatmapToggle" class="w-5 h-5 text-primary bg-slate-600 border-slate-500 rounded focus:ring-primary">
-                </label>
-                <label for="maintainedToggle" class="flex-grow flex items-center justify-between bg-slate-700 p-3 rounded-lg cursor-pointer">
-                    <span>Jen k údržbě</span>
-                    <input type="checkbox" id="maintainedToggle" class="w-5 h-5 text-primary bg-slate-600 border-slate-500 rounded focus:ring-primary">
-                </label>
+            <label class="flex items-center justify-between bg-slate-700 p-3 rounded-lg cursor-pointer">
+                <span>Jen k údržbě</span>
+                <input type="checkbox" id="maintainedToggle" class="w-5 h-5">
+            </label>
+        </div>
+
+        <!-- Weather -->
+        <div class="bg-slate-800 p-4 rounded-xl">
+            <h2 class="text-lg font-bold mb-3 text-primary">☁️ Počasí</h2>
+            <div id="weatherContent" class="text-center py-2">
+                <div class="spinner mx-auto"></div>
             </div>
         </div>
 
-        <div class="section bg-slate-800 p-4 rounded-xl shadow-inner">
-            <h2 class="text-lg font-bold mb-3 text-primary">🗺️ Trasa a Navigace</h2>
-            <div id="routeStatus" class="text-sm opacity-80 mb-3">Trasa není aktivní. Přidejte alespoň 2 areály.</div>
-            <div id="routeList" class="space-y-2 mb-4"></div>
-            <button id="resetRouteBtn" class="w-full bg-warning py-3 rounded-lg mb-2">
-                <i class="fas fa-route"></i> Reset trasy
-            </button>
-            <button id="generateAIReportBtn" class="w-full bg-purple-600 py-3 rounded-lg">
-                <i class="fas fa-robot"></i> Generovat AI Protokol
-            </button>
-        </div>
-
-        <div class="section bg-slate-800 p-4 rounded-xl shadow-inner">
-            <h2 class="text-lg font-bold mb-3 text-primary">☁️ Počasí v centru mapy</h2>
-            <div id="weatherContent" class="text-center py-4 text-sm">
-                <div class="spinner"></div>
-            </div>
-        </div>
-
-        <div class="section">
-             <button id="addNewAreaBtn" class="w-full bg-success py-3 rounded-lg text-lg font-semibold">
-                <i class="fas fa-plus"></i> Přidat nový areál
-             </button>
-        </div>
-        
-        <div class="section text-center p-4">
-             <button id="resetAllDataBtn" class="text-sm text-danger/70 hover:text-danger">
-                Globální Reset Dat (vymaže lokální data i trasu)
-             </button>
-        </div>
-        
     </div>
 </div>
 
-<!-- Scripts -->
+<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
-<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <script src="https://unpkg.com/leaflet-geometryutil@0.9.3/src/leaflet.geometryutil.js"></script>
 
 <!-- Firebase -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, setLogLevel, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+    // Firebase config (optional)
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
 
-    window.db = null;
-    window.auth = null;
-    window.userId = null;
-    window.serverTimestamp = serverTimestamp;
-    window.doc = doc;
-    window.updateDoc = updateDoc;
-    window.deleteDoc = deleteDoc;
-    window.setDoc = setDoc;
-    window.addDoc = addDoc;
-    window.collection = collection;
-    window.onSnapshot = onSnapshot;
-
-    setLogLevel('error');
-
-    if (Object.keys(firebaseConfig).length > 0) {
+    if (firebaseConfig) {
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
         window.auth = getAuth(app);
 
         onAuthStateChanged(window.auth, async (user) => {
-            if (user) {
-                window.userId = user.uid;
-                const userIdEl = document.getElementById('userIdDisplay');
-                if (userIdEl) {
-                    userIdEl.textContent = `ID: ${user.uid.substring(0, 8)}...`;
-                }
-            } else {
-                try {
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(window.auth, initialAuthToken);
-                        window.userId = window.auth.currentUser.uid;
-                        const userIdEl = document.getElementById('userIdDisplay');
-                        if (userIdEl) {
-                            userIdEl.textContent = `ID: ${window.userId.substring(0, 8)}...`;
-                        }
-                    } else {
-                        await signInAnonymously(window.auth);
-                        window.userId = window.auth.currentUser.uid;
-                        const userIdEl = document.getElementById('userIdDisplay');
-                        if (userIdEl) {
-                            userIdEl.textContent = `ID: ${window.userId.substring(0, 8)} (anonym)`;
-                        }
-                    }
-                } catch (error) {
-                    console.error("Chyba přihlášení Firebase:", error);
-                    window.userId = crypto.randomUUID();
-                    const userIdEl = document.getElementById('userIdDisplay');
-                    if (userIdEl) {
-                        userIdEl.textContent = `ID: GUEST`;
-                    }
-                }
+            if (!user) {
+                await signInAnonymously(window.auth);
             }
-            window.isAuthReady = true;
-            if (window.initApp) {
-                window.initApp();
-            }
+            window.userId = window.auth.currentUser?.uid || 'guest';
+            window.firebaseReady = true;
+            if (window.initApp) window.initApp();
         });
     } else {
-        console.warn("Firebase config není k dispozici. Používám pouze LocalStorage.");
-        window.userId = crypto.randomUUID();
-        const userIdEl = document.getElementById('userIdDisplay');
-        if (userIdEl) {
-            userIdEl.textContent = `ID: OFFLINE`;
-        }
-        window.isAuthReady = true;
-        if (window.initApp) {
-            window.initApp();
-        }
+        console.log('📴 Firebase not configured, using offline mode');
+        window.userId = 'guest';
+        window.firebaseReady = true;
+        if (window.initApp) window.initApp();
     }
 </script>
 
-<!-- Main App Script -->
+<!-- Main App -->
 <script src="scripts/provozni-mapa.js"></script>
 
-<!-- Service Worker Registration -->
+<!-- Service Worker -->
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/sw.js')
-                .then(registration => {
-                    console.log('✅ Service Worker registered:', registration.scope);
-                })
-                .catch(error => {
-                    console.warn('❌ Service Worker registration failed:', error);
-                });
+                .then(reg => console.log('✅ Service Worker registered'))
+                .catch(err => console.warn('❌ SW registration failed:', err));
         });
     }
 </script>
