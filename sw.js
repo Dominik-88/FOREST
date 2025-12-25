@@ -13,10 +13,26 @@ const OFFLINE_URL = '/offline.html';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
-    '/styles/main.css',
-    '/scripts/app.js',
+    '/offline.html',
     '/manifest.json',
-    '/data/areals-2025-updated.json'
+    '/scripts/provozni-mapa.js',
+    '/scripts/firebase-config.js',
+    '/data/areals-2025-updated.json',
+    // Leaflet
+    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+    'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css',
+    'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css',
+    'https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js',
+    'https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css',
+    'https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js',
+    'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css',
+    'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js',
+    'https://unpkg.com/leaflet.heat/dist/leaflet-heat.js',
+    // Icons
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css',
+    // Tailwind
+    'https://cdn.tailwindcss.com'
 ];
 
 // =============================================
@@ -29,7 +45,20 @@ self.addEventListener('install', (event) => {
         caches.open(CACHE_NAME)
             .then((cache) => {
                 console.log('[SW] Caching assets');
-                return cache.addAll(ASSETS_TO_CACHE);
+                // Cache local assets first
+                const localAssets = ASSETS_TO_CACHE.filter(url => !url.startsWith('http'));
+                return cache.addAll(localAssets)
+                    .then(() => {
+                        // Then try to cache external assets (don't fail if they fail)
+                        const externalAssets = ASSETS_TO_CACHE.filter(url => url.startsWith('http'));
+                        return Promise.allSettled(
+                            externalAssets.map(url => 
+                                cache.add(url).catch(err => {
+                                    console.warn(`[SW] Failed to cache ${url}:`, err);
+                                })
+                            )
+                        );
+                    });
             })
             .then(() => {
                 console.log('[SW] Installation complete');
@@ -67,76 +96,107 @@ self.addEventListener('activate', (event) => {
 });
 
 // =============================================
-// FETCH EVENT (FIXED!)
+// FETCH EVENT - Network First with Cache Fallback
 // =============================================
 self.addEventListener('fetch', (event) => {
     const { request } = event;
+    const url = new URL(request.url);
     
     // Skip non-GET requests
     if (request.method !== 'GET') {
         return;
     }
     
-    // Skip chrome-extension and other non-http(s) requests
-    if (!request.url.startsWith('http')) {
+    // Skip Chrome extensions
+    if (url.protocol === 'chrome-extension:') {
         return;
     }
     
-    event.respondWith(
-        fetch(request)
-            .then((response) => {
-                // Clone response for caching
-                const responseToCache = response.clone();
-                
-                // Cache successful responses
-                if (response.status === 200) {
-                    caches.open(CACHE_NAME)
-                        .then((cache) => {
-                            cache.put(request, responseToCache);
+    // Skip Firebase API calls (always need fresh data)
+    if (url.hostname.includes('firebaseio.com') || 
+        url.hostname.includes('googleapis.com') ||
+        url.hostname.includes('firestore.googleapis.com')) {
+        return;
+    }
+    
+    // Network First strategy for HTML
+    if (request.destination === 'document') {
+        event.respondWith(
+            fetch(request)
+                .then((response) => {
+                    // Clone and cache the response
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(request, responseClone);
+                    });
+                    return response;
+                })
+                .catch(() => {
+                    // If network fails, try cache
+                    return caches.match(request)
+                        .then((cachedResponse) => {
+                            if (cachedResponse) {
+                                return cachedResponse;
+                            }
+                            // If no cache, return offline page
+                            return caches.match(OFFLINE_URL);
                         });
+                })
+        );
+        return;
+    }
+    
+    // Cache First strategy for static assets
+    event.respondWith(
+        caches.match(request)
+            .then((cachedResponse) => {
+                if (cachedResponse) {
+                    // Return cached version and update in background
+                    fetch(request)
+                        .then((response) => {
+                            caches.open(CACHE_NAME).then((cache) => {
+                                cache.put(request, response);
+                            });
+                        })
+                        .catch(() => {
+                            // Network failed, but we have cache
+                        });
+                    return cachedResponse;
                 }
                 
-                return response;
-            })
-            .catch(() => {
-                // Network failed, try cache
-                return caches.match(request)
-                    .then((cachedResponse) => {
-                        if (cachedResponse) {
-                            return cachedResponse;
+                // Not in cache, fetch from network
+                return fetch(request)
+                    .then((response) => {
+                        // Don't cache non-successful responses
+                        if (!response || response.status !== 200 || response.type === 'error') {
+                            return response;
                         }
                         
-                        // FIXED: Only return offline page for navigation requests
-                        if (request.mode === 'navigate') {
-                            return caches.match(OFFLINE_URL)
-                                .then((offlineResponse) => {
-                                    if (offlineResponse) {
-                                        return offlineResponse;
-                                    }
-                                    
-                                    // Fallback HTML if offline page not cached
-                                    return new Response(
-                                        '<html><body><h1>Offline</h1><p>Aplikace není dostupná offline.</p></body></html>',
-                                        {
-                                            headers: { 'Content-Type': 'text/html' }
-                                        }
-                                    );
-                                });
-                        }
-                        
-                        // For non-navigation requests (images, scripts, etc.)
-                        // Return a network error instead of HTML
-                        return new Response('Network error', {
-                            status: 408,
-                            statusText: 'Network error'
+                        // Clone and cache the response
+                        const responseClone = response.clone();
+                        caches.open(CACHE_NAME).then((cache) => {
+                            cache.put(request, responseClone);
                         });
+                        
+                        return response;
+                    })
+                    .catch((error) => {
+                        console.error('[SW] Fetch failed:', error);
+                        
+                        // Return offline page for navigation requests
+                        if (request.destination === 'document') {
+                            return caches.match(OFFLINE_URL);
+                        }
+                        
+                        // For other requests, just fail
+                        throw error;
                     });
             })
     );
 });
 
 // =============================================
-// MESSAGE EVENT
+// MESSAGE EVENT - Handle messages from clients
 // =============================================
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
@@ -145,18 +205,56 @@ self.addEventListener('message', (event) => {
     
     if (event.data && event.data.type === 'CLEAR_CACHE') {
         event.waitUntil(
-            caches.delete(CACHE_NAME)
-                .then(() => {
-                    console.log('[SW] Cache cleared');
-                    return self.clients.matchAll();
-                })
-                .then((clients) => {
-                    clients.forEach((client) => {
-                        client.postMessage({
-                            type: 'CACHE_CLEARED'
-                        });
-                    });
-                })
+            caches.keys().then((cacheNames) => {
+                return Promise.all(
+                    cacheNames.map((cacheName) => caches.delete(cacheName))
+                );
+            }).then(() => {
+                event.ports[0].postMessage({ success: true });
+            })
         );
     }
+});
+
+// =============================================
+// SYNC EVENT - Background sync (future feature)
+// =============================================
+self.addEventListener('sync', (event) => {
+    if (event.tag === 'sync-areals') {
+        event.waitUntil(
+            // Future: Sync data with Firebase when back online
+            Promise.resolve()
+        );
+    }
+});
+
+// =============================================
+// PUSH EVENT - Push notifications (future feature)
+// =============================================
+self.addEventListener('push', (event) => {
+    const options = {
+        body: event.data ? event.data.text() : 'Nová notifikace z JVS FOREST',
+        icon: '/manifest-icon-192.png',
+        badge: '/manifest-icon-192.png',
+        vibrate: [200, 100, 200],
+        data: {
+            dateOfArrival: Date.now(),
+            primaryKey: 1
+        }
+    };
+    
+    event.waitUntil(
+        self.registration.showNotification('JVS FOREST', options)
+    );
+});
+
+// =============================================
+// NOTIFICATION CLICK EVENT
+// =============================================
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    
+    event.waitUntil(
+        clients.openWindow('/')
+    );
 });
