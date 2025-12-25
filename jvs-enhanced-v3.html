@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0055ff">
+    <meta name="description" content="JVS Enhanced v3.0 - Pokročilý systém správy vodárenských areálů s AI, realtime kolaborací a geofencing">
+    
+    <title>JVS Enhanced v3.0 - Management System</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230055ff'/%3E%3Ctext x='50' y='65' font-size='60' fill='white' text-anchor='middle' font-weight='bold'%3EJ%3C/text%3E%3C/svg%3E">
+    
+    <!-- External Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0055ff',
+                        'primary-light': '#4c8cff',
+                        'primary-dark': '#0044cc',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        'heat-low': '#4ade80',
+                        'heat-medium': '#fbbf24',
+                        'heat-high': '#f87171'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Custom Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+        
+        /* Map Container */
+        #map {
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+        }
+        
+        /* Heatmap Layer */
+        .leaflet-heatmap-layer {
+            opacity: 0.6;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 420px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            overflow-y: auto;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+        
+        .sidebar-header {
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, #0055ff 0%, #0044cc 100%);
+            color: white;
+            padding: 24px;
+            z-index: 10;
+        }
+        
+        .sidebar-content {
+            padding: 20px;
+        }
+        
+        /* Section Cards */
+        .section-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        
+        .section-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 85, 255, 0.12);
+            border-color: #0055ff;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0055ff;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 280px;
+            margin-top: 16px;
+        }
+        
+        /* Filters */
+        .filter-group {
+            margin-bottom: 16px;
+        }
+        
+        .filter-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+        
+        .filter-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.2s;
+            background: white;
+        }
+        
+        .filter-input:focus {
+            outline: none;
+            border-color: #0055ff;
+            box-shadow: 0 0 0 3px rgba(0, 85, 255, 0.1);
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #0055ff 0%, #0044cc 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 85, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        /* Floating Action Buttons */
+        .fab-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0055ff 0%, #0044cc 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0, 85, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .fab:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 8px 24px rgba(0, 85, 255, 0.5);
+        }
+        
+        .fab.secondary {
+            background: white;
+            color: #0055ff;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Toggle Button */
+        .sidebar-toggle {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            z-index: 1001;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #0055ff;
+            transition: all 0.2s;
+        }
+        
+        .sidebar-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 85, 255, 0.2);
+        }
+        
+        .sidebar.collapsed + .sidebar-toggle {
+            left: 24px;
+        }
+        
+        /* Areals List */
+        .areals-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .areal-item {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .areal-item:hover {
+            border-color: #0055ff;
+            box-shadow: 0 4px 12px rgba(0, 85, 255, 0.15);
+            transform: translateX(4px);
+        }
+        
+        .areal-name {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+        
+        .areal-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        .areal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .badge-high {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .badge-medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .badge-low {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1e293b;
+        }
+        
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: none;
+            background: #f1f5f9;
+            color: #64748b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .modal-close:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+        
+        .modal-body {
+            padding: 24px;
+        }
+        
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .toast {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            animation: toastSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes toastSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .toast.success .toast-icon {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .toast.error .toast-icon {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .toast.warning .toast-icon {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .toast.info .toast-icon {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #0055ff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                max-width: 380px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .fab-container {
+                bottom: 16px;
+                right: 16px;
+            }
+            
+            .fab {
+                width: 48px;
+                height: 48px;
+                font-size: 18px;
+            }
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* Weather Widget */
+        .weather-widget {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        
+        .weather-temp {
+            font-size: 36px;
+            font-weight: 800;
+        }
+        
+        /* Geofence Indicator */
+        .geofence-active {
+            position: fixed;
+            top: 90px;
+            right: 24px;
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+            z-index: 999;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* History Controls */
+        .history-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .history-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+        
+        .history-btn:hover:not(:disabled) {
+            border-color: #0055ff;
+            color: #0055ff;
+        }
+        
+        .history-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Map Container -->
+    <div id="map"></div>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-2xl font-black">JVS Enhanced v3.0</h1>
+                    <p class="text-sm opacity-90 mt-1">Pokročilý management systém</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-3xl font-black">41</div>
+                    <div class="text-xs opacity-90">Areálů</div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-3 gap-3">
+                <div class="bg-white bg-opacity-20 rounded-lg p-3 text-center">
+                    <div class="text-xl font-bold" id="catICount">23</div>
+                    <div class="text-xs opacity-90">Kat. I.</div>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-lg p-3 text-center">
+                    <div class="text-xl font-bold" id="catIICount">15</div>
+                    <div class="text-xs opacity-90">Kat. II.</div>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-lg p-3 text-center">
+                    <div class="text-xl font-bold" id="noCatCount">3</div>
+                    <div class="text-xs opacity-90">Bez kat.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar-content">
+            
+            <!-- Statistics Section -->
+            <div class="section-card">
+                <div class="section-title">
+                    <i class="fas fa-chart-pie"></i>
+                    Statistiky a grafy
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="totalArea">198 093</div>
+                        <div class="stat-label">Celková výměra (m²)</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="totalFence">10 907</div>
+                        <div class="stat-label">Oplocení (bm)</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="avgPriority">82</div>
+                        <div class="stat-label">Průměrná priorita</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="totalCost">1.8M</div>
+                        <div class="stat-label">Roční náklady (Kč)</div>
+                    </div>
+                </div>
+                
+                <!-- Chart Tabs -->
+                <div class="flex gap-2 mt-4">
+                    <button class="btn btn-secondary flex-1 text-xs" onclick="showChart('area')">
+                        <i class="fas fa-chart-bar"></i> Výměry
+                    </button>
+                    <button class="btn btn-secondary flex-1 text-xs" onclick="showChart('priority')">
+                        <i class="fas fa-chart-line"></i> Priority
+                    </button>
+                    <button class="btn btn-secondary flex-1 text-xs" onclick="showChart('cost')">
+                        <i class="fas fa-coins"></i> Náklady
+                    </button>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="statsChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Weather Widget -->
+            <div class="section-card">
+                <div class="section-title">
+                    <i class="fas fa-cloud-sun"></i>
+                    Počasí v terénu
+                </div>
+                <div class="weather-widget" id="weatherWidget">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="weather-temp" id="weatherTemp">--°C</div>
+                            <div class="text-sm opacity-90" id="weatherDesc">Načítání...</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-4xl" id="weatherIcon">☁️</div>
+                            <div class="text-xs mt-2" id="weatherLocation">--</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 mt-3 text-xs">
+                        <div>
+                            <div class="opacity-75">Vítr</div>
+                            <div class="font-bold" id="weatherWind">-- km/h</div>
+                        </div>
+                        <div>
+                            <div class="opacity-75">Vlhkost</div>
+                            <div class="font-bold" id="weatherHumidity">--%</div>
+                        </div>
+                        <div>
+                            <div class="opacity-75">Srážky</div>
+                            <div class="font-bold" id="weatherRain">-- mm</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filters Section -->
+            <div class="section-card">
+                <div class="section-title">
+                    <i class="fas fa-filter"></i>
+                    Filtry a vyhledávání
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-search"></i> Vyhledávání
+                    </label>
+                    <input type="text" 
+                           class="filter-input" 
+                           id="searchInput" 
+                           placeholder="Název, okres, kategorie...">
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-map-marker-alt"></i> Okres
+                    </label>
+                    <select class="filter-input" id="districtFilter">
+                        <option value="">Všechny okresy</option>
+                        <option value="CB">České Budějovice (CB)</option>
+                        <option value="TA">Tábor (TA)</option>
+                        <option value="PT">Prachatice (PT)</option>
+                        <option value="CK">Český Krumlov (CK)</option>
+                        <option value="PI">Písek (PI)</option>
+                        <option value="ST">Strakonice (ST)</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-exclamation-triangle"></i> Kategorie rizika
+                    </label>
+                    <div class="flex gap-2">
+                        <label class="flex-1">
+                            <input type="checkbox" id="catI" checked> Kat. I.
+                        </label>
+                        <label class="flex-1">
+                            <input type="checkbox" id="catII" checked> Kat. II.
+                        </label>
+                        <label class="flex-1">
+                            <input type="checkbox" id="catNone" checked> Bez kat.
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-crosshairs"></i> Seřadit podle vzdálenosti
+                    </label>
+                    <button class="btn btn-secondary w-full" id="sortByDistance">
+                        <i class="fas fa-location-arrow"></i>
+                        Použít moji polohu
+                    </button>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button class="btn btn-primary flex-1" id="applyFilters">
+                        <i class="fas fa-check"></i> Použít
+                    </button>
+                    <button class="btn btn-secondary flex-1" id="resetFilters">
+                        <i class="fas fa-undo"></i> Reset
+                    </button>
+                </div>
+                
+                <!-- History Controls -->
+                <div class="history-controls">
+                    <button class="history-btn" id="undoBtn" disabled>
+                        <i class="fas fa-undo"></i> Zpět
+                    </button>
+                    <button class="history-btn" id="redoBtn" disabled>
+                        <i class="fas fa-redo"></i> Vpřed
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Areals List -->
+            <div class="section-card">
+                <div class="section-title">
+                    <i class="fas fa-list"></i>
+                    Seznam areálů (<span id="arealsCount">41</span>)
+                </div>
+                
+                <div class="areals-list" id="arealsList">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+            
+            <!-- Route Planner -->
+            <div class="section-card">
+                <div class="section-title">
+                    <i class="fas fa-route"></i>
+                    Optimalizace tras (OSRM)
+                </div>
+                
+                <div id="routePoints" class="mb-3">
+                    <p class="text-sm text-gray-600">Vyberte areály pro optimalizaci trasy</p>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button class="btn btn-warning flex-1" id="optimizeRoute" disabled>
+                        <i class="fas fa-route"></i> Optimalizovat
+                    </button>
+                    <button class="btn btn-secondary" id="clearRoute" disabled>
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                
+                <div id="routeResult" class="mt-3 hidden">
+                    <div class="bg-blue-50 rounded-lg p-3 text-sm">
+                        <div class="flex justify-between mb-2">
+                            <span>Vzdálenost:</span>
+                            <strong id="routeDistance">--</strong>
+                        </div>
+                        <div class="flex justify-between mb-2">
+                            <span>Čas:</span>
+                            <strong id="routeDuration">--</strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Úspora:</span>
+                            <strong class="text-green-600" id="routeSavings">--</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Export Section -->
+            <div class="section-card">
+                <div class="section-title">
+                    <i class="fas fa-download"></i>
+                    Export dat
+                </div>
+                
+                <div class="flex gap-2">
+                    <button class="btn btn-success flex-1" id="exportCSV">
+                        <i class="fas fa-file-csv"></i> CSV
+                    </button>
+                    <button class="btn btn-success flex-1" id="exportGeoJSON">
+                        <i class="fas fa-map"></i> GeoJSON
+                    </button>
+                    <button class="btn btn-success flex-1" id="exportPDF">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+    </aside>
+    
+    <!-- Sidebar Toggle -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Floating Action Buttons -->
+    <div class="fab-container">
+        <button class="fab" id="addArealFab" title="Přidat areál">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button class="fab secondary" id="heatmapToggle" title="Heatmapa">
+            <i class="fas fa-fire"></i>
+        </button>
+        <button class="fab secondary" id="geofenceToggle" title="Geofencing">
+            <i class="fas fa-bell"></i>
+        </button>
+        <button class="fab secondary" id="locateMe" title="Moje poloha">
+            <i class="fas fa-crosshairs"></i>
+        </button>
+    </div>
+    
+    <!-- Geofence Indicator -->
+    <div class="geofence-active" id="geofenceIndicator" style="display: none;">
+        <i class="fas fa-bell"></i> Geofencing aktivní
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <!-- Edit Areal Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Upravit areál</h3>
+                <button class="modal-close" onclick="closeModal('editModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editArealForm">
+                    <div class="filter-group">
+                        <label class="filter-label">Název areálu *</label>
+                        <input type="text" class="filter-input" id="editName" required>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Okres *</label>
+                        <select class="filter-input" id="editDistrict" required>
+                            <option value="CB">České Budějovice</option>
+                            <option value="TA">Tábor</option>
+                            <option value="PT">Prachatice</option>
+                            <option value="CK">Český Krumlov</option>
+                            <option value="PI">Písek</option>
+                            <option value="ST">Strakonice</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Kategorie</label>
+                        <select class="filter-input" id="editCategory">
+                            <option value="">Bez kategorie</option>
+                            <option value="I.">Kategorie I.</option>
+                            <option value="II.">Kategorie II.</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="filter-group">
+                            <label class="filter-label">Výměra (m²) *</label>
+                            <input type="number" class="filter-input" id="editArea" min="1" required>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Oplocení (bm)</label>
+                            <input type="number" class="filter-input" id="editFence" min="0">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="filter-group">
+                            <label class="filter-label">Latitude *</label>
+                            <input type="number" class="filter-input" id="editLat" step="0.000001" required>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Longitude *</label>
+                            <input type="number" class="filter-input" id="editLon" step="0.000001" required>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Priorita (0-100)</label>
+                        <input type="range" class="w-full" id="editPriority" min="0" max="100" value="50">
+                        <div class="text-center text-sm font-bold text-primary" id="priorityValue">50</div>
+                    </div>
+                    <div class="flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary flex-1">
+                            <i class="fas fa-save"></i> Uložit změny
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">
+                            Zrušit
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- External Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    
+    <!-- Main Application Script -->
+    <script src="./jvs-enhanced-v3.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('✅ Service Worker registrován', reg))
+                .catch(err => console.error('❌ Chyba při registraci SW:', err));
+        }
+    </script>
+    
+</body>
+</html>
