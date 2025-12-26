@@ -336,7 +336,7 @@ service cloud.firestore {
 ## 👨‍💻 Autor
 
 **Dominik Schmied**
-- Email: d.schmied@lantaron.cz
+- Email: dominikschmied4@gmail.com 
 - GitHub: [@Dominik-88](https://github.com/Dominik-88)
 
 ---
