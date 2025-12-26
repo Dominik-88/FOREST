@@ -403,7 +403,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
 
 **Dominik Schmied**
 - GitHub: [@Dominik-88](https://github.com/Dominik-88)
-- Email: d.schmied@lantaron.cz
+- Email: dominikschmied4@gmail.com
 
 ## 🙏 Poděkování
 
